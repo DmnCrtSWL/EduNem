@@ -1,0 +1,361 @@
+:root, [data-theme="light"] {
+  /* Ultra Clean & Lightweight Palette for Mobile App (Paper / Light Slate) */
+  --bg-app: #f1f5f9;
+  --bg-mobile: #ffffff;
+  --bg-row: #ffffff;
+  --bg-row-hover: #f8fafc;
+  --bg-sheet: #ffffff;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --border-light: #e2e8f0;
+
+  /* Primary brand color */
+  --color-primary: #2563eb;
+  --bg-primary: #eff6ff;
+  --border-primary: #bfdbfe;
+  
+  /* Soft, minimalist status colors */
+  --color-ok: #059669;
+  --bg-ok: #ecfdf5;
+  --border-ok: #a7f3d0;
+  
+  --color-warn: #d97706;
+  --bg-warn: #fffbeb;
+  --border-warn: #fde68a;
+  
+  --color-danger: #dc2626;
+  --bg-danger: #fef2f2;
+  --border-danger: #fecaca;
+  
+  --color-info: #2563eb;
+  --bg-info: #eff6ff;
+  --border-info: #bfdbfe;
+  
+  /* Desktop Admin Dashboard Dark Palette */
+  --bg-admin: #0b0f19;
+  --bg-card: #131b2e;
+  --bg-glass-border: rgba(255, 255, 255, 0.1);
+  --text-secondary: #94a3b8;
+  --radius-full: 9999px;
+  
+  /* Typography */
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Shadows */
+  --shadow-mobile: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.05);
+  --shadow-sheet: 0 -10px 25px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] {
+  /* Minimalist, Sleek Dark Mode (Obsidian / Soft Charcoal) */
+  --bg-app: #030712;
+  --bg-mobile: #0f172a;
+  --bg-row: #0f172a;
+  --bg-row-hover: #1e293b;
+  --bg-sheet: #1e293b;
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  
+  --border-light: #1e293b;
+
+  /* Primary brand color (dark mode) */
+  --color-primary: #60a5fa;
+  --bg-primary: rgba(59, 130, 246, 0.12);
+  --border-primary: rgba(59, 130, 246, 0.3);
+  
+  /* Muted dark status palettes */
+  --color-ok: #34d399;
+  --bg-ok: rgba(16, 185, 129, 0.15);
+  --border-ok: rgba(16, 185, 129, 0.3);
+  
+  --color-warn: #fbbf24;
+  --bg-warn: rgba(245, 158, 11, 0.15);
+  --border-warn: rgba(245, 158, 11, 0.3);
+  
+  --color-danger: #f87171;
+  --bg-danger: rgba(239, 68, 68, 0.15);
+  --border-danger: rgba(239, 68, 68, 0.3);
+  
+  --color-info: #60a5fa;
+  --bg-info: rgba(59, 130, 246, 0.15);
+  --border-info: rgba(59, 130, 246, 0.3);
+  
+  --shadow-mobile: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.08);
+  --shadow-sheet: 0 -10px 30px rgba(0, 0, 0, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Glass panel utility for Desktop Admin views */
+.glass-panel {
+  background: rgba(19, 27, 46, 0.85);
+  border: 1px solid var(--bg-glass-border);
+  border-radius: 16px;
+  color: #f8fafc;
+}
+
+/* Simulated Smartphone Container for Desktop Web Viewing */
+.mobile-simulator-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 70px);
+  padding: 1.5rem 1rem;
+  background-color: var(--bg-app);
+  background-image: radial-gradient(var(--border-light) 1px, transparent 1px);
+  background-size: 20px 20px;
+  transition: background-color 0.25s ease;
+}
+
+.mobile-phone-frame {
+  width: 100%;
+  max-width: 410px;
+  background: var(--bg-mobile);
+  border-radius: 40px;
+  box-shadow: var(--shadow-mobile);
+  border: 10px solid #1e293b;
+  overflow: hidden;
+  position: relative;
+  min-height: 780px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+/* Phone notch / Dynamic Island */
+.phone-notch {
+  width: 120px;
+  height: 24px;
+  background: #1e293b;
+  border-radius: 0 0 16px 16px;
+  margin: 0 auto;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-notch::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: #0f172a;
+  border-radius: 50%;
+  border: 1px solid #334155;
+}
+
+/* Scrollable mobile content */
+.mobile-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 28px; /* space for notch */
+  padding-bottom: 70px; /* space for bottom nav */
+}
+
+/* Clean roster row */
+.roster-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-row);
+  transition: background 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.roster-row:hover, .roster-row:active {
+  background: var(--bg-row-hover);
+}
+
+.roster-row.is-exception {
+  background: var(--bg-warn);
+}
+
+.roster-row.is-absent {
+  background: var(--bg-danger);
+}
+
+.roster-row.is-ok {
+  background: var(--bg-row);
+}
+
+/* Touch target button */
+.btn-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.btn-mobile:active {
+  transform: scale(0.98);
+}
+
+.btn-mobile-primary {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-mobile-secondary {
+  background: var(--bg-row-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+}
+
+/* Slide-up bottom sheet for mobile */
+.bottom-sheet-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.bottom-sheet-content {
+  background: var(--bg-sheet);
+  color: var(--text-main);
+  width: 100%;
+  border-radius: 24px 24px 0 0;
+  padding: 1.5rem 1.25rem 2.5rem 1.25rem;
+  box-shadow: var(--shadow-sheet);
+  max-height: 85%;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-light);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Bottom mobile navigation bar */
+.mobile-bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--bg-mobile);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+  padding-bottom: 8px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.nav-item.active .nav-item-icon svg {
+  stroke: var(--color-primary);
+}
+
+@keyframes animate-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: animate-fade-in 0.2s ease forwards;
+}
+
+/* Typing dots animation for AI */
+@keyframes typing-dot {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: typing-dot 1.4s infinite both;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.nav-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Desktop navbar override for role switcher */
+.desktop-top-bar {
+  background: #0f172a;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
