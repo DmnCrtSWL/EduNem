@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "expo": "expo start --web",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
+    "expo": "^57.0.21",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "vite-plugin-pwa": "^1.3.0"
