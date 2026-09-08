@@ -1,28 +1,98 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import Icon from '../ui/Icon';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyPlans, onNavigateToWizard, onApprove }) {
   const { theme } = useTheme();
-  const [selectedWeekId, setSelectedWeekId] = useState(1);
   const [isSimplifyingDay, setIsSimplifyingDay] = useState(null);
   const [isRegeneratingDay, setIsRegeneratingDay] = useState(null);
   const [editingField, setEditingField] = useState(null);
+  const [lockModalData, setLockModalData] = useState(null);
 
   if (!group || !monthlyPlans) return null;
 
   const currentMonthData = monthlyPlans[group.id] || monthlyPlans['3a'];
   const currentStage = currentMonthData.stage || 'step1_lema';
+  const confirmedDays = currentMonthData.confirmedDays || {};
+  const selectedWeekId = currentMonthData.selectedWeekId || 1;
 
   const getWeight = (id) => {
+    const defaultMap = { 1: 20, 2: 60, 3: 20 };
     const w = currentMonthData.activityWeights?.find(aw => aw.id === id);
-    return w ? `(${w.weight}%)` : '';
+    const weightVal = w ? w.weight : defaultMap[id];
+    return weightVal ? `(${weightVal}%)` : '';
   };
+
+  // Evaluation criteria / activity weights 100% check
+  const defaultWeights = [
+    { id: 1, name: 'Actividades de Inicio', weight: 20 },
+    { id: 2, name: 'Proyectos de Desarrollo', weight: 60 },
+    { id: 3, name: 'Reflexión de Cierre', weight: 20 }
+  ];
+  const activeWeights = currentMonthData.activityWeights || defaultWeights;
+  const totalWeights = activeWeights.reduce((acc, curr) => acc + (Number(curr.weight) || 0), 0);
+  const isWeightsValid = totalWeights === 100;
+
   const currentWeek = currentMonthData.weeks.find(w => w.id === selectedWeekId) || currentMonthData.weeks[0];
 
   const isPlanNotGenerated = currentStage === 'step1_lema' || currentStage === 'step2_objetivo' || currentStage === 'step3_enfoque';
+
+  const toggleConfirmDay = (weekId, dayIdx) => {
+    const key = `${weekId}_${dayIdx}`;
+    const newConfirmed = {
+      ...confirmedDays,
+      [key]: !confirmedDays[key]
+    };
+    onUpdateMonthlyPlans(prev => {
+      const gData = prev[group.id] || prev['3a'];
+      return {
+        ...prev,
+        [group.id]: {
+          ...gData,
+          confirmedDays: newConfirmed
+        }
+      };
+    });
+  };
+
+  const isWeekFullyConfirmed = (week) => {
+    if (!week || !week.days) return false;
+    return week.days.every((_, idx) => !!confirmedDays[`${week.id}_${idx}`]);
+  };
+
+  const isWeekUnlocked = (weekIdx) => {
+    if (weekIdx === 0) return true;
+    const prevWeek = currentMonthData.weeks[weekIdx - 1];
+    return isWeekFullyConfirmed(prevWeek);
+  };
+
+  const totalDaysInMonth = currentMonthData.weeks.reduce((acc, w) => acc + w.days.length, 0);
+  const totalConfirmedDaysInMonth = currentMonthData.weeks.reduce((acc, w) => {
+    return acc + w.days.filter((_, idx) => !!confirmedDays[`${w.id}_${idx}`]).length;
+  }, 0);
+
+  const isAllWeeksConfirmed = currentMonthData.weeks.every(w => isWeekFullyConfirmed(w));
+
+  const handleSelectWeek = (week, idx) => {
+    if (!isWeekUnlocked(idx)) {
+      setLockModalData({
+        message: `Debes validar el 100% de los días de la Semana ${idx} antes de desbloquear la Semana ${idx + 1}.`
+      });
+      return;
+    }
+    onUpdateMonthlyPlans(prev => {
+      const gData = prev[group.id] || prev['3a'];
+      return {
+        ...prev,
+        [group.id]: {
+          ...gData,
+          selectedWeekId: week.id
+        }
+      };
+    });
+  };
 
   if (isPlanNotGenerated) {
     return (
@@ -85,6 +155,13 @@ export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyP
     }, 800);
   };
 
+  const handleRegenerateDayActivity = (dayIndex) => {
+    setIsRegeneratingDay(dayIndex);
+    setTimeout(() => {
+      setIsRegeneratingDay(null);
+    }, 800);
+  };
+
   const handleSaveEdit = () => {
     if (!editingField) return;
     onUpdateMonthlyPlans(prev => {
@@ -135,7 +212,7 @@ export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyP
       {/* Top Header & Status */}
       <View style={styles.headerBlock}>
         <View style={styles.rowBetween}>
-          <View>
+          <View style={{ flex: 1, paddingRight: 10 }}>
             <Text style={[styles.subjectTitle, { color: theme.colors.textMain }]}>{currentMonthData.subject}</Text>
             <Text style={[styles.subjectSub, { color: theme.colors.textMuted }]}>{group.name} • {currentMonthData.monthName}</Text>
           </View>
@@ -148,6 +225,7 @@ export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyP
         {/* Status Badge */}
         <View style={[
           styles.statusBadge,
+          { marginTop: 10 },
           currentStage === 'approved' ? { backgroundColor: theme.colors.bgOk } :
           currentStage === 'submitted' ? { backgroundColor: theme.colors.bgWarn } : { backgroundColor: theme.colors.bgInfo }
         ]}>
@@ -165,21 +243,6 @@ export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyP
             {currentStage === 'approved' ? 'Plan Aprobado Oficialmente' : currentStage === 'submitted' ? 'En Revisión (Dirección)' : 'Borrador sin enviar'}
           </Text>
         </View>
-
-        {/* 1-Tap Action Buttons */}
-        {(currentStage === 'preview' || currentStage === 'step1_lema' || currentStage === 'step2_objetivo' || currentStage === 'step3_enfoque') && (
-          <TouchableOpacity onPress={handleSubmitToDirector} style={[styles.actionBtn, { backgroundColor: theme.colors.info }]}>
-            <Icon name="send" size={16} color="#ffffff" style={{ marginRight: 6 }} />
-            <Text style={styles.actionBtnText}>Enviar a Dirección</Text>
-          </TouchableOpacity>
-        )}
-
-        {currentStage === 'submitted' && (
-          <TouchableOpacity onPress={handleSimulateDirectorApproval} style={[styles.actionBtn, { backgroundColor: theme.colors.ok }]}>
-            <Icon name="check" size={16} color="#ffffff" style={{ marginRight: 6 }} />
-            <Text style={styles.actionBtnText}>Simular Aprobación</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Week Selector Grid */}
@@ -187,35 +250,50 @@ export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyP
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 12 }}>
           {currentMonthData.weeks.map((w, i) => {
             const isSelected = selectedWeekId === w.id;
+            const unlocked = isWeekUnlocked(i);
+            const fullyConfirmed = isWeekFullyConfirmed(w);
+
             return (
               <TouchableOpacity
                 key={w.id}
-                onPress={() => setSelectedWeekId(w.id)}
+                onPress={() => handleSelectWeek(w, i)}
                 style={[
                   styles.weekPill,
                   isSelected
                     ? styles.weekPillActive
-                    : [styles.weekPillInactive, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]
+                    : [styles.weekPillInactive, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }],
+                  !unlocked && { opacity: 0.6 }
                 ]}
               >
-                <Text style={[styles.weekPillText, { color: isSelected ? '#ffffff' : theme.colors.textMuted }, isSelected && { fontWeight: '800' }]}>
-                  Sem {i + 1}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  {!unlocked ? (
+                    <Icon name="lock" size={12} color={isSelected ? '#ffffff' : theme.colors.textMuted} />
+                  ) : fullyConfirmed ? (
+                    <Icon name="check-circle" size={12} color={isSelected ? '#ffffff' : theme.colors.ok} />
+                  ) : null}
+                  <Text style={[styles.weekPillText, { color: isSelected ? '#ffffff' : theme.colors.textMuted }, isSelected && { fontWeight: '800' }]}>
+                    Sem {i + 1}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        {/* Selected Week Card */}
+        {/* Selected Week Card - Perfectly symmetrical header alignment */}
         <View style={[styles.weekCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-              <Icon name="target" size={14} color={theme.colors.primary} />
-              <Text style={[styles.weekDateText, { color: theme.colors.primary }]}>{currentWeek.dateRange}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, flex: 1 }}>
+              <Icon name="target" size={14} color={theme.colors.primary} style={{ marginTop: 2 }} />
+              <Text style={[styles.weekDateText, { color: theme.colors.primary, lineHeight: 15 }]}>
+                {currentWeek.dateRange ? currentWeek.dateRange.replace(/ (de )/i, '\n$1') : ''}
+              </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4, flex: 1, justifyContent: 'flex-end' }}>
-              <Icon name="pin" size={14} color={theme.colors.textMuted} style={{ marginTop: 1 }} />
-              <Text style={[styles.weekThemeText, { color: theme.colors.textMuted, flexShrink: 1, textAlign: 'right' }]}>{currentWeek.theme}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
+              <Icon name="pin" size={14} color={theme.colors.textMuted} style={{ marginTop: 2 }} />
+              <Text style={[styles.weekThemeText, { color: theme.colors.textMuted, flexShrink: 1, textAlign: 'right', lineHeight: 15 }]}>
+                {currentWeek.theme}
+              </Text>
             </View>
           </View>
           <Text style={[styles.weekObjectiveText, { color: theme.colors.textMain }]}>
@@ -225,143 +303,192 @@ export default function LessonPlanViewer({ group, monthlyPlans, onUpdateMonthlyP
 
         {/* Daily Activities Grid */}
         <View style={{ gap: 14 }}>
-          {currentWeek.days.map((dayItem, dIdx) => (
-            <View key={dIdx} style={[styles.dayCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
-              <View style={styles.dayCardHeader}>
-                <Text style={[styles.dayBadgeText, { backgroundColor: theme.colors.bgPrimary, color: theme.colors.primary }]}>{dayItem.day}</Text>
+          {currentWeek.days.map((dayItem, dIdx) => {
+            const isDayConfirmed = !!confirmedDays[`${selectedWeekId}_${dIdx}`];
 
-                {currentStage === 'approved' && (
-                  <View style={{ flexDirection: 'row', gap: 6 }}>
-                    <TouchableOpacity
-                      onPress={() => handleSimplifyDayActivity(dIdx)}
-                      disabled={isSimplifyingDay === dIdx}
-                      style={[styles.adaptBtn, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight }]}
-                    >
-                      <Icon name="sparkles" size={12} color={theme.colors.warn} style={{ marginRight: 4 }} />
-                      <Text style={[styles.adaptBtnText, { color: theme.colors.textMain }]}>{isSimplifyingDay === dIdx ? 'Ajustando...' : 'Adaptar'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => handleRegenerateDayActivity(dIdx)}
-                      disabled={isRegeneratingDay === dIdx}
-                      style={[styles.adaptBtn, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight }]}
-                    >
-                      <Icon name="refresh" size={12} color={theme.colors.info} style={{ marginRight: 4 }} />
-                      <Text style={[styles.adaptBtnText, { color: theme.colors.textMain }]}>{isRegeneratingDay === dIdx ? 'Generando...' : 'Regenerar'}</Text>
-                    </TouchableOpacity>
+            return (
+              <View key={dIdx} style={[styles.dayCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+                <View style={styles.dayCardHeader}>
+                  <Text style={[styles.dayBadgeText, { backgroundColor: theme.colors.bgPrimary, color: theme.colors.primary }]}>{dayItem.day}</Text>
+                </View>
+
+                <Text style={[styles.dayTitle, { color: theme.colors.textMain }]}>{dayItem.title}</Text>
+
+                <View style={{ gap: 12 }}>
+                  {/* INICIO */}
+                  <View style={styles.stepRow}>
+                    <View style={[styles.stepNumCircle, { backgroundColor: theme.colors.bgPrimary }]}>
+                      <Text style={[styles.stepNumText, { color: theme.colors.primary }]}>1</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={styles.rowBetween}>
+                        <Text style={[styles.stepLabel, { color: theme.colors.textMain }]}>
+                          Inicio <Text style={[styles.stepWeight, { color: theme.colors.textMuted }]}>{getWeight(1)}</Text>
+                        </Text>
+                        {currentStage === 'preview' && (
+                          <TouchableOpacity onPress={() => setEditingField({ dayIdx: dIdx, field: 'start', value: dayItem.start })}>
+                            <Icon name="edit-2" size={12} color={theme.colors.textMuted} />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      {editingField && editingField.dayIdx === dIdx && editingField.field === 'start' ? (
+                        <View style={{ gap: 8, marginTop: 4 }}>
+                          <TextInput multiline value={editingField.value} onChangeText={(val) => setEditingField({ ...editingField, value: val })} style={[styles.editInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]} />
+                          <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+                            <TouchableOpacity onPress={() => setEditingField(null)} style={styles.cancelEditBtn}>
+                              <Text style={[styles.cancelEditText, { color: theme.colors.textMuted }]}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveEdit} style={[styles.saveEditBtn, { backgroundColor: theme.colors.primary }]}>
+                              <Text style={styles.saveEditText}>Guardar</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ) : (
+                        <Text style={[styles.stepDesc, { color: theme.colors.textMuted }]}>{dayItem.start}</Text>
+                      )}
+                    </View>
                   </View>
-                )}
+                  
+                  {/* DESARROLLO */}
+                  <View style={styles.stepRow}>
+                    <View style={[styles.stepNumCircle, { backgroundColor: theme.colors.bgPrimary }]}>
+                      <Text style={[styles.stepNumText, { color: theme.colors.primary }]}>2</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={styles.rowBetween}>
+                        <Text style={[styles.stepLabel, { color: theme.colors.primary }]}>
+                          Desarrollo <Text style={[styles.stepWeight, { color: theme.colors.textMuted }]}>{getWeight(2)}</Text>
+                        </Text>
+                        {currentStage === 'preview' && (
+                          <TouchableOpacity onPress={() => setEditingField({ dayIdx: dIdx, field: 'main', value: dayItem.main })}>
+                            <Icon name="edit-2" size={12} color={theme.colors.textMuted} />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      {editingField && editingField.dayIdx === dIdx && editingField.field === 'main' ? (
+                        <View style={{ gap: 8, marginTop: 4 }}>
+                          <TextInput multiline value={editingField.value} onChangeText={(val) => setEditingField({ ...editingField, value: val })} style={[styles.editInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]} />
+                          <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+                            <TouchableOpacity onPress={() => setEditingField(null)} style={styles.cancelEditBtn}>
+                              <Text style={[styles.cancelEditText, { color: theme.colors.textMuted }]}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveEdit} style={[styles.saveEditBtn, { backgroundColor: theme.colors.primary }]}>
+                              <Text style={styles.saveEditText}>Guardar</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ) : (
+                        <Text style={[styles.stepDesc, { color: theme.colors.textMain, fontWeight: '600' }]}>{dayItem.main}</Text>
+                      )}
+                    </View>
+                  </View>
+                  
+                  {/* CIERRE */}
+                  <View style={styles.stepRow}>
+                    <View style={[styles.stepNumCircle, { backgroundColor: theme.colors.bgPrimary }]}>
+                      <Text style={[styles.stepNumText, { color: theme.colors.primary }]}>3</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={styles.rowBetween}>
+                        <Text style={[styles.stepLabel, { color: theme.colors.textMain }]}>
+                          Cierre <Text style={[styles.stepWeight, { color: theme.colors.textMuted }]}>{getWeight(3)}</Text>
+                        </Text>
+                        {currentStage === 'preview' && (
+                          <TouchableOpacity onPress={() => setEditingField({ dayIdx: dIdx, field: 'end', value: dayItem.end })}>
+                            <Icon name="edit-2" size={12} color={theme.colors.textMuted} />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      {editingField && editingField.dayIdx === dIdx && editingField.field === 'end' ? (
+                        <View style={{ gap: 8, marginTop: 4 }}>
+                          <TextInput multiline value={editingField.value} onChangeText={(val) => setEditingField({ ...editingField, value: val })} style={[styles.editInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]} />
+                          <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+                            <TouchableOpacity onPress={() => setEditingField(null)} style={styles.cancelEditBtn}>
+                              <Text style={[styles.cancelEditText, { color: theme.colors.textMuted }]}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveEdit} style={[styles.saveEditBtn, { backgroundColor: theme.colors.primary }]}>
+                              <Text style={styles.saveEditText}>Guardar</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ) : (
+                        <Text style={[styles.stepDesc, { color: theme.colors.textMuted }]}>{dayItem.end}</Text>
+                      )}
+                    </View>
+                  </View>
+
+                </View>
+
+                {/* Day Validation Check Button */}
+                <TouchableOpacity
+                  onPress={() => toggleConfirmDay(selectedWeekId, dIdx)}
+                  style={[
+                    styles.dayConfirmBtn,
+                    isDayConfirmed
+                      ? { backgroundColor: theme.colors.bgOk, borderColor: theme.colors.ok }
+                      : { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight }
+                  ]}
+                >
+                  <Icon 
+                    name={isDayConfirmed ? 'check-circle' : 'circle'} 
+                    size={16} 
+                    color={isDayConfirmed ? theme.colors.ok : theme.colors.textMuted} 
+                    style={{ marginRight: 6 }} 
+                  />
+                  <Text style={[
+                    styles.dayConfirmText,
+                    isDayConfirmed ? { color: theme.colors.ok, fontWeight: '800' } : { color: theme.colors.textMuted }
+                  ]}>
+                    {isDayConfirmed ? 'Validado' : 'Validar Día'}
+                  </Text>
+                </TouchableOpacity>
+
               </View>
+            );
+          })}
 
-              <Text style={[styles.dayTitle, { color: theme.colors.textMain }]}>{dayItem.title}</Text>
-
-              <View style={{ gap: 12 }}>
-                {/* INICIO */}
-                <View style={styles.stepRow}>
-                  <View style={[styles.stepNumCircle, { backgroundColor: theme.colors.bgPrimary }]}>
-                    <Text style={[styles.stepNumText, { color: theme.colors.primary }]}>1</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={styles.rowBetween}>
-                      <Text style={[styles.stepLabel, { color: theme.colors.textMain }]}>
-                        Inicio <Text style={[styles.stepWeight, { color: theme.colors.textMuted }]}>{getWeight(1)}</Text>
-                      </Text>
-                      {currentStage === 'preview' && (
-                        <TouchableOpacity onPress={() => setEditingField({ dayIdx: dIdx, field: 'start', value: dayItem.start })}>
-                          <Icon name="edit-2" size={12} color={theme.colors.textMuted} />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    {editingField && editingField.dayIdx === dIdx && editingField.field === 'start' ? (
-                      <View style={{ gap: 8, marginTop: 4 }}>
-                        <TextInput multiline value={editingField.value} onChangeText={(val) => setEditingField({ ...editingField, value: val })} style={[styles.editInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]} />
-                        <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
-                          <TouchableOpacity onPress={() => setEditingField(null)} style={styles.cancelEditBtn}>
-                            <Text style={[styles.cancelEditText, { color: theme.colors.textMuted }]}>Cancelar</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={handleSaveEdit} style={[styles.saveEditBtn, { backgroundColor: theme.colors.primary }]}>
-                            <Text style={styles.saveEditText}>Guardar</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    ) : (
-                      <Text style={[styles.stepDesc, { color: theme.colors.textMuted }]}>{dayItem.start}</Text>
-                    )}
-                  </View>
-                </View>
-                
-                {/* DESARROLLO */}
-                <View style={styles.stepRow}>
-                  <View style={[styles.stepNumCircle, { backgroundColor: theme.colors.bgPrimary }]}>
-                    <Text style={[styles.stepNumText, { color: theme.colors.primary }]}>2</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={styles.rowBetween}>
-                      <Text style={[styles.stepLabel, { color: theme.colors.primary }]}>
-                        Desarrollo <Text style={[styles.stepWeight, { color: theme.colors.textMuted }]}>{getWeight(2)}</Text>
-                      </Text>
-                      {currentStage === 'preview' && (
-                        <TouchableOpacity onPress={() => setEditingField({ dayIdx: dIdx, field: 'main', value: dayItem.main })}>
-                          <Icon name="edit-2" size={12} color={theme.colors.textMuted} />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    {editingField && editingField.dayIdx === dIdx && editingField.field === 'main' ? (
-                      <View style={{ gap: 8, marginTop: 4 }}>
-                        <TextInput multiline value={editingField.value} onChangeText={(val) => setEditingField({ ...editingField, value: val })} style={[styles.editInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]} />
-                        <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
-                          <TouchableOpacity onPress={() => setEditingField(null)} style={styles.cancelEditBtn}>
-                            <Text style={[styles.cancelEditText, { color: theme.colors.textMuted }]}>Cancelar</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={handleSaveEdit} style={[styles.saveEditBtn, { backgroundColor: theme.colors.primary }]}>
-                            <Text style={styles.saveEditText}>Guardar</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    ) : (
-                      <Text style={[styles.stepDesc, { color: theme.colors.textMain, fontWeight: '600' }]}>{dayItem.main}</Text>
-                    )}
-                  </View>
-                </View>
-                
-                {/* CIERRE */}
-                <View style={styles.stepRow}>
-                  <View style={[styles.stepNumCircle, { backgroundColor: theme.colors.bgPrimary }]}>
-                    <Text style={[styles.stepNumText, { color: theme.colors.primary }]}>3</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={styles.rowBetween}>
-                      <Text style={[styles.stepLabel, { color: theme.colors.textMain }]}>
-                        Cierre <Text style={[styles.stepWeight, { color: theme.colors.textMuted }]}>{getWeight(3)}</Text>
-                      </Text>
-                      {currentStage === 'preview' && (
-                        <TouchableOpacity onPress={() => setEditingField({ dayIdx: dIdx, field: 'end', value: dayItem.end })}>
-                          <Icon name="edit-2" size={12} color={theme.colors.textMuted} />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    {editingField && editingField.dayIdx === dIdx && editingField.field === 'end' ? (
-                      <View style={{ gap: 8, marginTop: 4 }}>
-                        <TextInput multiline value={editingField.value} onChangeText={(val) => setEditingField({ ...editingField, value: val })} style={[styles.editInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]} />
-                        <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
-                          <TouchableOpacity onPress={() => setEditingField(null)} style={styles.cancelEditBtn}>
-                            <Text style={[styles.cancelEditText, { color: theme.colors.textMuted }]}>Cancelar</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={handleSaveEdit} style={[styles.saveEditBtn, { backgroundColor: theme.colors.primary }]}>
-                            <Text style={styles.saveEditText}>Guardar</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    ) : (
-                      <Text style={[styles.stepDesc, { color: theme.colors.textMuted }]}>{dayItem.end}</Text>
-                    )}
-                  </View>
-                </View>
-
-              </View>
-            </View>
-          ))}
+          {/* Bottom Submit Action for Week 4 - Lifecycle: Enviar -> Simular Aprobación -> Disappears after approval */}
+          {selectedWeekId === (currentMonthData.weeks[currentMonthData.weeks.length - 1]?.id || 4) && (
+            currentStage === 'submitted' ? (
+              <TouchableOpacity onPress={handleSimulateDirectorApproval} style={[styles.actionBtn, { backgroundColor: theme.colors.ok, marginTop: 12 }]}>
+                <Icon name="check" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                <Text style={styles.actionBtnText}>Simular Aprobación</Text>
+              </TouchableOpacity>
+            ) : currentStage !== 'approved' && isAllWeeksConfirmed ? (
+              <TouchableOpacity onPress={handleSubmitToDirector} style={[styles.actionBtn, { backgroundColor: theme.colors.info, marginTop: 12 }]}>
+                <Icon name="send" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                <Text style={styles.actionBtnText}>Enviar a Dirección</Text>
+              </TouchableOpacity>
+            ) : null
+          )}
         </View>
       </View>
+
+      {/* Lock Alert Modal */}
+      <Modal
+        visible={!!lockModalData}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setLockModalData(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+            <View style={[styles.modalIconCircle, { backgroundColor: theme.colors.bgWarn }]}>
+              <Icon name="alert-triangle" size={32} color={theme.colors.warn} />
+            </View>
+            <Text style={[styles.modalTitle, { color: theme.colors.textMain }]}>Semana Bloqueada</Text>
+            <Text style={[styles.modalMessage, { color: theme.colors.textMuted }]}>
+              {lockModalData?.message}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setLockModalData(null)}
+              style={[styles.modalOkBtn, { backgroundColor: theme.colors.primary }]}
+            >
+              <Text style={styles.modalOkText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
     </ScrollView>
   );
@@ -497,31 +624,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 8,
-    marginTop: 10,
+    borderRadius: 10,
   },
   statusBadgeText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    flexShrink: 1,
+  },
+  alertBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 10,
+  },
+  alertText: {
     fontSize: 12,
     fontWeight: '700',
+    flex: 1,
   },
   actionBtn: {
     width: '100%',
     marginTop: 10,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 13,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionBtnText: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
+  },
+  disabledActionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 10,
+  },
+  disabledActionText: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontWeight: '600',
+    flex: 1,
   },
   weekPill: {
     borderRadius: 20,
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
   },
   weekPillActive: {
     backgroundColor: theme.colors.primary,
@@ -565,6 +719,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.bgRow,
     borderRadius: 16,
     padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
   },
   dayCardHeader: {
     flexDirection: 'row',
@@ -668,5 +824,67 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
   },
+  dayConfirmBtn: {
+    marginTop: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayConfirmText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  modalIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalOkBtn: {
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalOkText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
 });
+
 

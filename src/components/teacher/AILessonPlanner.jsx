@@ -17,23 +17,27 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
   const [objetivoInput, setObjetivoInput] = useState('');
   const [enfoqueInput, setEnfoqueInput] = useState('');
   
+  const currentMonthData = (group && monthlyPlans) ? (monthlyPlans[group.id] || monthlyPlans['3a']) : null;
+  const currentStage = currentMonthData ? (currentMonthData.stage || 'step1_lema') : 'step1_lema';
+
+  const initialCriteria = [
+    { id: 1, name: 'Participación', weight: 0 },
+    { id: 2, name: 'Conducta', weight: 0 },
+    { id: 3, name: 'Tareas / Libreta', weight: 0 }
+  ];
+
+  const initialActivities = [
+    { id: 1, name: 'Actividades de Inicio', weight: 0 },
+    { id: 2, name: 'Proyectos de Desarrollo', weight: 0 },
+    { id: 3, name: 'Reflexión de Cierre', weight: 0 }
+  ];
+
   const [hasExam, setHasExam] = useState(false);
-  const [evalCriteria, setEvalCriteria] = useState([
-    { id: 1, name: 'Participación', weight: 10 },
-    { id: 2, name: 'Conducta', weight: 30 },
-    { id: 3, name: 'Tareas / Libreta', weight: 10 }
-  ]);
-  const [activityWeights, setActivityWeights] = useState([
-    { id: 1, name: 'Actividades de Inicio', weight: 10 },
-    { id: 2, name: 'Proyectos de Desarrollo', weight: 30 },
-    { id: 3, name: 'Reflexión de Cierre', weight: 10 }
-  ]);
+  const [evalCriteria, setEvalCriteria] = useState(() => currentMonthData?.evalCriteria || initialCriteria);
+  const [activityWeights, setActivityWeights] = useState(() => currentMonthData?.activityWeights || initialActivities);
   
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef(null);
-
-  const currentMonthData = (group && monthlyPlans) ? (monthlyPlans[group.id] || monthlyPlans['3a']) : null;
-  const currentStage = currentMonthData ? (currentMonthData.stage || 'step1_lema') : 'step1_lema';
 
   if (!group || !monthlyPlans) return null;
 
@@ -163,11 +167,35 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
   };
 
   const handleRestartChat = () => {
+    const resetCriteria = [
+      { id: 1, name: 'Participación', weight: 0 },
+      { id: 2, name: 'Conducta', weight: 0 },
+      { id: 3, name: 'Tareas / Libreta', weight: 0 }
+    ];
+    const resetActivities = [
+      { id: 1, name: 'Actividades de Inicio', weight: 0 },
+      { id: 2, name: 'Proyectos de Desarrollo', weight: 0 },
+      { id: 3, name: 'Reflexión de Cierre', weight: 0 }
+    ];
+    setLemaInput('');
+    setObjetivoInput('');
+    setEnfoqueInput('');
+    setEvalCriteria(resetCriteria);
+    setActivityWeights(resetActivities);
+    setHasExam(false);
+
     onUpdateMonthlyPlans(prev => ({
       ...prev,
       [group.id]: {
         ...prev[group.id],
-        stage: 'step1_lema'
+        stage: 'step1_lema',
+        teacherMotto: '',
+        monthObjective: '',
+        classFocus: '',
+        evalCriteria: resetCriteria,
+        activityWeights: resetActivities,
+        confirmedDays: {},
+        selectedWeekId: 1
       }
     }));
   };
@@ -517,7 +545,24 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
         {/* STEP 5: EDIT ACTIVITY WEIGHTS */}
         {currentStage === 'step5_actividades' && !isTyping && (
           <View style={{ gap: 8 }}>
-            <Text style={[styles.composerHeaderLabel, { color: theme.colors.primary }]}>Paso 5 • Asigna peso a actividades:</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+              <Text style={[styles.composerHeaderLabel, { color: theme.colors.primary }]}>Paso 5 • Asigna peso a actividades:</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  onUpdateMonthlyPlans(prev => ({
+                    ...prev,
+                    [group.id]: {
+                      ...prev[group.id],
+                      stage: 'step4_criterios'
+                    }
+                  }));
+                }} 
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 3, paddingHorizontal: 8, backgroundColor: theme.colors.bgPrimary, borderRadius: 12 }}
+              >
+                <Icon name="arrow-left" size={13} color={theme.colors.primary} />
+                <Text style={{ fontSize: 11, fontWeight: '700', color: theme.colors.primary }}>Paso 4</Text>
+              </TouchableOpacity>
+            </View>
             <View style={[styles.criteriaCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
               {activityWeights.map((c, idx) => (
                 <View key={c.id} style={styles.criteriaRow}>
@@ -556,26 +601,7 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
           </View>
         )}
 
-        {/* COMPOSER STEP FINAL: ACTION FOOTER BAR ONCE PREVIEW GENERATED */}
-        {currentStage === 'preview' && !isTyping && (
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity
-              onPress={() => onNavigateToTab && onNavigateToTab('planeaciones')}
-              style={styles.footerBtnSecondary}
-            >
-              <Icon name="planeaciones" size={16} color={theme.colors.info} style={{ marginRight: 6 }} />
-              <Text style={styles.footerBtnSecondaryText}>Planeación</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={handleSubmitToDirector}
-              style={styles.footerBtnPrimary}
-            >
-              <Icon name="check" size={16} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.footerBtnPrimaryText}>Enviar</Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
         {currentStage === 'submitted' && !isTyping && (
           <View style={{ gap: 6 }}>
