@@ -1,49 +1,75 @@
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import Badge from '../ui/Badge';
+import { theme } from '../../theme/tokens';
 
 export default function StatusBar({ currentGroup, totalStudents, checkedCount }) {
   return (
-    <div style={{
-      background: 'rgba(19, 27, 46, 0.6)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-      padding: '0.5rem 1.5rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      flexWrap: 'wrap',
-      gap: '1rem',
-      fontSize: '0.85rem'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+    <View style={styles.container}>
+      <View style={styles.leftRow}>
         <Badge type="success" icon="🟢">
           Conectado: Prefectura en Tiempo Real
         </Badge>
-        <span style={{ color: 'var(--text-secondary)' }}>
-          🏫 <strong>Plan SEP (NEM):</strong> Ciclo Escolar 2026-2027 • Fase 6
-        </span>
-      </div>
+        <Text style={styles.infoText}>
+          🏫 <Text style={{ fontWeight: '800', color: '#ffffff' }}>Plan SEP (NEM):</Text> Ciclo Escolar 2026-2027 • Fase 6
+        </Text>
+      </View>
 
       {currentGroup && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ color: 'var(--text-secondary)' }}>
-            📊 Progreso del Grupo: <strong style={{ color: '#ffffff' }}>{checkedCount} / {totalStudents}</strong> registrados
-          </span>
-          <div style={{
-            width: '100px',
-            height: '6px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: 'var(--radius-full)',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: `${totalStudents > 0 ? (checkedCount / totalStudents) * 100 : 0}%`,
-              height: '100%',
-              background: 'var(--grad-primary)',
-              transition: 'width 0.4s ease'
-            }} />
-          </div>
-        </div>
+        <View style={styles.rightRow}>
+          <Text style={styles.infoText}>
+            📊 Progreso del Grupo: <Text style={{ color: '#ffffff', fontWeight: '800' }}>{checkedCount} / {totalStudents}</Text> registrados
+          </Text>
+          <View style={styles.progressTrack}>
+            <View style={[
+              styles.progressFill,
+              { width: `${totalStudents > 0 ? (checkedCount / totalStudents) * 100 : 0}%` }
+            ]} />
+          </View>
+        </View>
       )}
-    </div>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'rgba(19, 27, 46, 0.6)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  leftRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  rightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoText: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+  },
+  progressTrack: {
+    width: 100,
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: theme.colors.primary,
+  },
+});
+

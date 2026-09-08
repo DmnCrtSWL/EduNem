@@ -1,98 +1,93 @@
 import React from 'react';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { theme } from '../../theme/tokens';
 
 export default function Button({
   children,
   onClick,
+  onPress,
   variant = 'primary',
   size = 'md',
   fullWidth = false,
   icon = null,
   disabled = false,
-  className = '',
-  title = '',
+  style,
   ...props
 }) {
-  const baseStyles = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5rem',
-    fontWeight: '600',
-    fontFamily: 'var(--font-heading)',
-    borderRadius: 'var(--radius-md)',
-    border: 'none',
-    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.5 : 1,
-    width: fullWidth ? '100%' : 'auto',
-    textAlign: 'center',
-    boxShadow: 'var(--shadow-sm)',
-    position: 'relative',
-    overflow: 'hidden',
-    ...props.style,
-  };
-
-  const sizes = {
-    sm: { padding: '0.4rem 0.8rem', fontSize: '0.85rem', minHeight: '36px' },
-    md: { padding: '0.65rem 1.25rem', fontSize: '0.95rem', minHeight: '44px' },
-    lg: { padding: '0.85rem 1.75rem', fontSize: '1.1rem', minHeight: '52px' },
-    xl: { padding: '1.1rem 2.2rem', fontSize: '1.25rem', minHeight: '62px' },
-  };
-
-  const variants = {
-    primary: {
-      background: 'var(--grad-primary)',
-      color: '#ffffff',
-      boxShadow: 'var(--glow-success)',
-    },
-    ai: {
-      background: 'var(--grad-ai)',
-      color: '#ffffff',
-      boxShadow: 'var(--glow-ai)',
-    },
-    sos: {
-      background: 'var(--grad-sos)',
-      color: '#ffffff',
-      boxShadow: 'var(--glow-sos)',
-    },
-    warning: {
-      background: 'var(--grad-warning)',
-      color: '#ffffff',
-    },
-    secondary: {
-      background: 'var(--bg-card)',
-      color: 'var(--text-primary)',
-      border: '1px solid var(--bg-glass-border)',
-    },
-    ghost: {
-      background: 'transparent',
-      color: 'var(--text-secondary)',
-      boxShadow: 'none',
-    },
-    success: {
-      background: '#10b981',
-      color: '#ffffff',
-      boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)',
-    }
-  };
-
-  const combinedStyles = {
-    ...baseStyles,
-    ...sizes[size],
-    ...variants[variant],
-  };
+  const handlePress = onPress || onClick;
 
   return (
-    <button
-      style={combinedStyles}
-      onClick={disabled ? undefined : onClick}
+    <TouchableOpacity
+      onPress={disabled ? undefined : handlePress}
       disabled={disabled}
-      className={`touch-target ${className}`}
-      title={title}
+      activeOpacity={0.8}
+      style={[
+        styles.button,
+        styles[variant],
+        styles[size],
+        fullWidth && styles.fullWidth,
+        disabled && styles.disabled,
+        style
+      ]}
       {...props}
     >
-      {icon && <span style={{ fontSize: '1.2em', display: 'flex', alignItems: 'center' }}>{icon}</span>}
-      <span>{children}</span>
-    </button>
+      {icon && typeof icon === 'string' ? (
+        <Text style={styles.iconText}>{icon}</Text>
+      ) : (
+        icon
+      )}
+      {typeof children === 'string' ? (
+        <Text style={[styles.text, styles[`${variant}Text`]]}>{children}</Text>
+      ) : (
+        children
+      )}
+    </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: 12,
+  },
+  fullWidth: {
+    width: '100%',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  iconText: {
+    fontSize: 16,
+  },
+  text: {
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#ffffff',
+  },
+
+  // Sizes
+  sm: { paddingVertical: 6, paddingHorizontal: 12 },
+  md: { paddingVertical: 10, paddingHorizontal: 16 },
+  lg: { paddingVertical: 14, paddingHorizontal: 22 },
+  xl: { paddingVertical: 18, paddingHorizontal: 28 },
+
+  // Variants
+  primary: { backgroundColor: theme.colors.primary },
+  primaryText: { color: '#ffffff' },
+  ai: { backgroundColor: '#8b5cf6' },
+  aiText: { color: '#ffffff' },
+  sos: { backgroundColor: theme.colors.danger },
+  sosText: { color: '#ffffff' },
+  warning: { backgroundColor: theme.colors.warn },
+  warningText: { color: '#ffffff' },
+  secondary: { backgroundColor: theme.colors.bgRow, borderWidth: 1, borderColor: theme.colors.borderLight },
+  secondaryText: { color: theme.colors.textMain },
+  ghost: { backgroundColor: 'transparent' },
+  ghostText: { color: theme.colors.textMuted },
+  success: { backgroundColor: theme.colors.ok },
+  successText: { color: '#ffffff' },
+});
+

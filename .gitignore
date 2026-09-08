@@ -25,4 +25,11 @@ dist-ssr
 
 # Agent directory
 .agents/
+.gemini/
+.claude/
+.windsurf/
+
+# Expo build artifacts
+.expo/
+
 

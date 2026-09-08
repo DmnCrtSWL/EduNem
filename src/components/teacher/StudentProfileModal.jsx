@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, StyleSheet } from 'react-native';
 import Icon from '../ui/Icon';
+import { theme } from '../../theme/tokens';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function StudentProfileModal({ student, group, monthlyPlans, onClose, onUpdateStudent, onTriggerSOS }) {
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('registro'); // 'registro', 'expediente', 'evaluacion'
   
   // Tab 1: Registro (EmojiPicker logic)
@@ -72,339 +76,721 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
   }
 
   return (
-    <div className="bottom-sheet-overlay" onClick={onClose}>
-      <div className="bottom-sheet-content" style={{ position: 'relative', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
-        {/* Drag Handle */}
-        <div style={{ width: '40px', height: '4px', background: 'var(--border-light)', borderRadius: '10px', margin: '0 auto 1rem auto', flexShrink: 0 }} />
+    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
+      <TouchableOpacity activeOpacity={1} style={styles.overlay} onPress={onClose}>
+        <TouchableOpacity activeOpacity={1} style={[styles.bottomSheet, { backgroundColor: theme.colors.bgMobile }]} onPress={() => {}}>
+          {/* Drag Handle */}
+          <View style={[styles.dragHandle, { backgroundColor: theme.colors.borderLight }]} />
 
-        {/* Student Info Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', paddingBottom: '0', flexShrink: 0 }}>
-          <div>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Alumno #{student.listNumber}
-            </span>
-            <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', margin: '0.15rem 0 0 0', fontWeight: '800' }}>
-              {student.name}
-            </h3>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', padding: '0 0.25rem' }}>
-            <Icon name="x" size={20} />
-          </button>
-        </div>
+          {/* Student Info Header */}
+          <View style={styles.modalHeader}>
+            <View>
+              <Text style={[styles.listNumText, { color: theme.colors.textMuted }]}>Alumno #{student.listNumber}</Text>
+              <Text style={[styles.studentTitle, { color: theme.colors.textMain }]}>{student.name}</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <Icon name="x" size={20} color={theme.colors.textMuted} />
+            </TouchableOpacity>
+          </View>
 
-        {/* Tabs Navigation */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', marginBottom: '1.25rem', flexShrink: 0 }}>
-          <button 
-            onClick={() => setActiveTab('registro')}
-            style={{ flex: 1, padding: '0.6rem 0', background: 'none', border: 'none', borderBottom: activeTab === 'registro' ? '2px solid var(--color-primary)' : '2px solid transparent', color: activeTab === 'registro' ? 'var(--color-primary)' : 'var(--text-muted)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            Registro
-          </button>
-          <button 
-            onClick={() => setActiveTab('expediente')}
-            style={{ flex: 1, padding: '0.6rem 0', background: 'none', border: 'none', borderBottom: activeTab === 'expediente' ? '2px solid var(--color-primary)' : '2px solid transparent', color: activeTab === 'expediente' ? 'var(--color-primary)' : 'var(--text-muted)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            Expediente 360°
-          </button>
-          <button 
-            onClick={() => setActiveTab('evaluacion')}
-            style={{ flex: 1, padding: '0.6rem 0', background: 'none', border: 'none', borderBottom: activeTab === 'evaluacion' ? '2px solid var(--color-primary)' : '2px solid transparent', color: activeTab === 'evaluacion' ? 'var(--color-primary)' : 'var(--text-muted)', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            Evaluación
-          </button>
-        </div>
+          {/* Tabs Navigation */}
+          <View style={styles.tabsNav}>
+            <TouchableOpacity 
+              onPress={() => setActiveTab('registro')}
+              style={[styles.tabItem, activeTab === 'registro' && styles.tabItemActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'registro' && styles.tabTextActive]}>Registro</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setActiveTab('expediente')}
+              style={[styles.tabItem, activeTab === 'expediente' && styles.tabItemActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'expediente' && styles.tabTextActive]}>Expediente 360°</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setActiveTab('evaluacion')}
+              style={[styles.tabItem, activeTab === 'evaluacion' && styles.tabItemActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'evaluacion' && styles.tabTextActive]}>Evaluación</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Scrollable Content Area */}
-        <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.2rem' }} className="animate-fade-in">
+          {/* Scrollable Content Area */}
+          <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
 
-          {/* TAB 1: REGISTRO DIARIO */}
-          {activeTab === 'registro' && (
-            <div>
-              {/* 1. Attendance Toggle */}
-              <div style={{ marginBottom: '1.15rem' }}>
-                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem', letterSpacing: '0.05em' }}>
-                  1. Asistencia del día:
-                </label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => setAttendance('present')}
-                    style={{
-                      flex: 1, padding: '0.65rem', borderRadius: '10px',
-                      border: attendance === 'present' ? '2px solid var(--color-ok)' : '1px solid var(--border-light)',
-                      background: attendance === 'present' ? 'var(--bg-ok)' : 'var(--bg-row)',
-                      color: attendance === 'present' ? 'var(--color-ok)' : 'var(--text-muted)',
-                      fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem'
-                    }}
-                  >
-                    <Icon name="check" size={16} />
-                    <span>Presente (Default)</span>
-                  </button>
-                  <button
-                    onClick={() => setAttendance('absent')}
-                    style={{
-                      flex: 1, padding: '0.65rem', borderRadius: '10px',
-                      border: attendance === 'absent' ? '2px solid var(--color-danger)' : '1px solid var(--border-light)',
-                      background: attendance === 'absent' ? 'var(--bg-danger)' : 'var(--bg-row)',
-                      color: attendance === 'absent' ? 'var(--color-danger)' : 'var(--text-muted)',
-                      fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem'
-                    }}
-                  >
-                    <Icon name="user-x" size={16} />
-                    <span>Falta / Inasistencia</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* 2. Short Teacher Note */}
-              <div style={{ marginBottom: '1.15rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <label style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <Icon name="file-text" size={14} />
-                    <span>2. Nota Corta del Docente (Opcional):</span>
-                  </label>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: isOverLimit ? 'var(--color-danger)' : wordCount > 120 ? 'var(--color-warn)' : 'var(--text-muted)' }}>
-                    {wordCount} / 150 palabras
-                  </span>
-                </div>
-                <textarea
-                  rows={3}
-                  placeholder="Ej: No entregó tarea / Excelente participación / Comentó indisposición médica leve..."
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: isOverLimit ? '2px solid var(--color-danger)' : '1px solid var(--border-light)', background: 'var(--bg-row)', fontSize: '0.85rem', color: 'var(--text-main)', fontFamily: 'inherit', outline: 'none', resize: 'none', transition: 'border-color 0.15s ease' }}
-                />
-                {isOverLimit && (
-                  <span style={{ display: 'block', color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '0.2rem', fontWeight: '600' }}>
-                    ⚠️ Has superado el límite de 150 palabras para mantener la agilidad del registro.
-                  </span>
-                )}
-              </div>
-
-              {/* 3. Quick Utility Presets */}
-              <p style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-                3. Reacción y Comportamiento Humano (1-Tap):
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                <button
-                  onClick={() => handleSelectQuickPreset('energetic', 'excellent')}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '600', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s ease' }}
-                >
-                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706', flexShrink: 0 }}>
-                    <Icon name="star" size={20} />
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontWeight: '700' }}>Destacado / Participación Activa</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Dominó el tema en clase o apoyó a sus compañeros</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleSelectQuickPreset('sad', 'doubts')}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'var(--bg-warn)', border: '1px solid var(--border-warn)', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--color-warn)', fontWeight: '600', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s ease' }}
-                >
-                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#fef9c3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ca8a04', flexShrink: 0 }}>
-                    <Icon name="help-circle" size={20} />
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontWeight: '700' }}>Distraído / Bajo Ánimo / Dudas</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Requiere reforzamiento pedagógico o apoyo emocional</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleSelectQuickPreset('normal', 'difficulty')}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'var(--bg-danger)', border: '1px solid var(--border-danger)', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--color-danger)', fontWeight: '600', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s ease' }}
-                >
-                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', flexShrink: 0 }}>
-                    <Icon name="alert-triangle" size={20} />
-                  </div>
-                  <div>
-                    <span style={{ display: 'block', fontWeight: '700' }}>Dificultad Mayor / No Entregó</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>No realizó la actividad asignada en el aula</span>
-                  </div>
-                </button>
-              </div>
-
-              {/* SOS Direct Action */}
-              <p style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--color-danger)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-                4. Alerta Inmediata a Prefectura / Dirección:
-              </p>
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                <button
-                  onClick={() => setConfirmSOS({ id: 'discipline', label: 'Indisciplina / Salió sin permiso', icon: 'shield-alert', color: 'var(--color-danger)', bg: 'var(--bg-danger)' })}
-                  style={{ flex: 1, padding: '0.7rem', background: 'var(--bg-danger)', border: '1px solid var(--border-danger)', borderRadius: '10px', color: 'var(--color-danger)', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-                >
-                  <Icon name="shield-alert" size={16} />
-                  <span>Aviso Indisciplina</span>
-                </button>
-
-                <button
-                  onClick={() => setConfirmSOS({ id: 'health', label: 'Enfermería / Salud', icon: 'heart-pulse', color: 'var(--color-info)', bg: 'var(--bg-info)' })}
-                  style={{ flex: 1, padding: '0.7rem', background: 'var(--bg-info)', border: '1px solid var(--border-info)', borderRadius: '10px', color: 'var(--color-info)', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-                >
-                  <Icon name="heart-pulse" size={16} />
-                  <span>Aviso Enfermería</span>
-                </button>
-              </div>
-
-              {/* Save button */}
-              <button onClick={handleSaveRegistro} disabled={isOverLimit} className="btn-mobile btn-mobile-primary" style={{ opacity: isOverLimit ? 0.5 : 1, cursor: isOverLimit ? 'not-allowed' : 'pointer' }}>
-                <Icon name="check" size={18} />
-                <span>Guardar Asistencia y Nota del Docente</span>
-              </button>
-            </div>
-          )}
-
-          {/* TAB 2: EXPEDIENTE 360 */}
-          {activeTab === 'expediente' && (
-            <div style={{ paddingBottom: '1rem' }}>
-              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
-                <div style={{ flex: 1, background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '1rem', textAlign: 'center' }}>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Promedio SEP</span>
-                  <span style={{ display: 'block', fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-primary)' }}>{student.historicalAverages.grade}</span>
-                </div>
-                <div style={{ flex: 1, background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '1rem', textAlign: 'center' }}>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Asistencia</span>
-                  <span style={{ display: 'block', fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-ok)' }}>{student.historicalAverages.attendance}%</span>
-                </div>
-              </div>
-
-              {student.socialNote && !student.socialNote.includes('Ninguna') && (
-                <div style={{ background: 'var(--bg-info)', border: '1px solid var(--border-info)', padding: '0.85rem 1rem', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--color-info)', marginBottom: '1rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
-                  <Icon name="users" size={18} color="var(--color-info)" style={{ marginTop: '0.1rem' }} />
-                  <div>
-                    <strong style={{ display: 'block', marginBottom: '0.2rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nota de Trabajo Social:</strong>
-                    {student.socialNote}
-                  </div>
-                </div>
-              )}
-
-              <h4 style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Comentarios de otros docentes</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {student.comments && student.comments.length > 0 ? (
-                  student.comments.map((comment, i) => (
-                    <div key={i} style={{ background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '10px', padding: '0.75rem', fontSize: '0.8rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                        <strong style={{ color: 'var(--text-main)' }}>{comment.author}</strong>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{comment.date}</span>
-                      </div>
-                      <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: 1.4 }}>"{comment.text}"</p>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-light)', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed var(--border-light)', borderRadius: '10px' }}>
-                    No hay comentarios recientes de otros docentes.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: EVALUACIÓN */}
-          {activeTab === 'evaluacion' && (
-            <div>
-              {activePlan ? (
-                <>
-                  <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-primary)', borderRadius: '12px', padding: '1rem', marginBottom: '1.25rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <Icon name="calendar" size={16} color="var(--color-primary)" />
-                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Planeación Activa
-                      </span>
-                    </div>
-                    <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '600' }}>
-                      {activeActivity ? activeActivity.desc : 'Actividad General de la Clase'}
-                    </p>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Evalúa el desempeño de {student.name.split(' ')[0]} en esta actividad específica.
-                    </span>
-                  </div>
-
-                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-                    Rúbrica Formativa:
-                  </label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                    <button
-                      onClick={() => setGradeRubric('logrado')}
-                      style={{ padding: '0.75rem 1rem', borderRadius: '10px', background: gradeRubric === 'logrado' ? 'var(--bg-ok)' : 'var(--bg-row)', border: gradeRubric === 'logrado' ? '2px solid var(--color-ok)' : '1px solid var(--border-light)', color: gradeRubric === 'logrado' ? 'var(--color-ok)' : 'var(--text-main)', fontSize: '0.85rem', fontWeight: '700', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.15s ease' }}
+            {/* TAB 1: REGISTRO DIARIO */}
+            {activeTab === 'registro' && (
+              <View>
+                {/* 1. Attendance Toggle */}
+                <View style={styles.sectionBlock}>
+                  <Text style={styles.sectionLabel}>1. Asistencia del día:</Text>
+                  <View style={styles.rowGap}>
+                    <TouchableOpacity
+                      onPress={() => setAttendance('present')}
+                      style={[
+                        styles.toggleBtn,
+                        attendance === 'present' ? styles.presentActive : styles.toggleBtnInactive
+                      ]}
                     >
-                      <Icon name="check-circle" size={18} />
-                      Logro Esperado (Completó la actividad)
-                    </button>
-                    <button
-                      onClick={() => setGradeRubric('proceso')}
-                      style={{ padding: '0.75rem 1rem', borderRadius: '10px', background: gradeRubric === 'proceso' ? 'var(--bg-warn)' : 'var(--bg-row)', border: gradeRubric === 'proceso' ? '2px solid var(--color-warn)' : '1px solid var(--border-light)', color: gradeRubric === 'proceso' ? 'var(--color-warn)' : 'var(--text-main)', fontSize: '0.85rem', fontWeight: '700', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.15s ease' }}
+                      <Icon name="check" size={16} color={attendance === 'present' ? theme.colors.ok : theme.colors.textMuted} />
+                      <Text style={[styles.toggleBtnText, attendance === 'present' && { color: theme.colors.ok }]}>Presente (Default)</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setAttendance('absent')}
+                      style={[
+                        styles.toggleBtn,
+                        attendance === 'absent' ? styles.absentActive : styles.toggleBtnInactive
+                      ]}
                     >
-                      <Icon name="clock" size={18} />
-                      En Proceso (Incompleto o con dudas)
-                    </button>
-                    <button
-                      onClick={() => setGradeRubric('apoyo')}
-                      style={{ padding: '0.75rem 1rem', borderRadius: '10px', background: gradeRubric === 'apoyo' ? 'var(--bg-danger)' : 'var(--bg-row)', border: gradeRubric === 'apoyo' ? '2px solid var(--color-danger)' : '1px solid var(--border-light)', color: gradeRubric === 'apoyo' ? 'var(--color-danger)' : 'var(--text-main)', fontSize: '0.85rem', fontWeight: '700', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.15s ease' }}
-                    >
-                      <Icon name="alert-circle" size={18} />
-                      Requiere Apoyo (No logró el objetivo)
-                    </button>
-                  </div>
+                      <Icon name="user-x" size={16} color={attendance === 'absent' ? theme.colors.danger : theme.colors.textMuted} />
+                      <Text style={[styles.toggleBtnText, attendance === 'absent' && { color: theme.colors.danger }]}>Falta / Inasistencia</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-                    Calificación Numérica (0-10):
-                  </label>
-                  <input 
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.1"
-                    value={gradeNumber}
-                    onChange={(e) => setGradeNumber(e.target.value)}
-                    placeholder="Ej: 8.5"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid var(--border-light)', background: 'var(--bg-row)', fontSize: '1rem', color: 'var(--text-main)', fontWeight: '700', outline: 'none', marginBottom: '1.25rem' }}
+                {/* 2. Short Teacher Note */}
+                <View style={styles.sectionBlock}>
+                  <View style={styles.rowBetween}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Icon name="file-text" size={14} color={theme.colors.textMuted} />
+                      <Text style={styles.sectionLabel}>2. Nota Corta del Docente (Opcional):</Text>
+                    </View>
+                    <Text style={[styles.wordCountText, isOverLimit && { color: theme.colors.danger }]}>
+                      {wordCount} / 150 palabras
+                    </Text>
+                  </View>
+                  <TextInput
+                    multiline
+                    numberOfLines={3}
+                    placeholder="Ej: No entregó tarea / Excelente participación / Comentó indisposición médica leve..."
+                    placeholderTextColor={theme.colors.textMuted}
+                    value={note}
+                    onChangeText={setNote}
+                    style={[styles.textArea, isOverLimit && { borderColor: theme.colors.danger, borderWidth: 2 }]}
                   />
+                  {isOverLimit && (
+                    <Text style={styles.limitWarnText}>
+                      ⚠️ Has superado el límite de 150 palabras para mantener la agilidad del registro.
+                    </Text>
+                  )}
+                </View>
 
-                  <button onClick={handleSaveEvaluacion} className="btn-mobile btn-mobile-primary">
-                    <Icon name="save" size={18} />
-                    <span>Guardar Evaluación</span>
-                  </button>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                  <Icon name="calendar" size={32} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} />
-                  <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>
-                    No hay una planeación activa o aprobada para el grupo de hoy. Genera y aprueba tu planeación en la pestaña "Planeación Inteligente" para poder evaluar esta actividad.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+                {/* 3. Quick Utility Presets */}
+                <Text style={styles.sectionLabel}>
+                  3. Reacción y Comportamiento Humano (1-Tap):
+                </Text>
+                <View style={{ gap: 8, marginBottom: 20 }}>
+                  <TouchableOpacity
+                    onPress={() => handleSelectQuickPreset('energetic', 'excellent')}
+                    style={styles.presetCard}
+                  >
+                    <View style={[styles.presetIconBox, { backgroundColor: '#fef3c7' }]}>
+                      <Icon name="star" size={20} color="#d97706" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.presetTitle}>Destacado / Participación Activa</Text>
+                      <Text style={styles.presetSub}>Dominó el tema en clase o apoyó a sus compañeros</Text>
+                    </View>
+                  </TouchableOpacity>
 
-        </div>
-      </div>
+                  <TouchableOpacity
+                    onPress={() => handleSelectQuickPreset('sad', 'doubts')}
+                    style={[styles.presetCard, { backgroundColor: theme.colors.bgWarn, borderColor: theme.colors.borderWarn }]}
+                  >
+                    <View style={[styles.presetIconBox, { backgroundColor: '#fef9c3' }]}>
+                      <Icon name="help-circle" size={20} color="#ca8a04" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.presetTitle, { color: theme.colors.warn }]}>Distraído / Bajo Ánimo / Dudas</Text>
+                      <Text style={styles.presetSub}>Requiere reforzamiento pedagógico o apoyo emocional</Text>
+                    </View>
+                  </TouchableOpacity>
 
-      {/* Confirmation Modal for SOS Alerts (Sin recortar por contenedor) */}
+                  <TouchableOpacity
+                    onPress={() => handleSelectQuickPreset('normal', 'difficulty')}
+                    style={[styles.presetCard, { backgroundColor: theme.colors.bgDanger, borderColor: theme.colors.borderDanger }]}
+                  >
+                    <View style={[styles.presetIconBox, { backgroundColor: '#fee2e2' }]}>
+                      <Icon name="alert-triangle" size={20} color="#dc2626" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.presetTitle, { color: theme.colors.danger }]}>Dificultad Mayor / No Entregó</Text>
+                      <Text style={styles.presetSub}>No realizó la actividad asignada en el aula</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                {/* SOS Direct Action */}
+                <Text style={[styles.sectionLabel, { color: theme.colors.danger }]}>
+                  4. Alerta Inmediata a Prefectura / Dirección:
+                </Text>
+                <View style={styles.rowGap}>
+                  <TouchableOpacity
+                    onPress={() => setConfirmSOS({ id: 'discipline', label: 'Indisciplina / Salió sin permiso', icon: 'shield-alert', color: theme.colors.danger, bg: theme.colors.bgDanger })}
+                    style={[styles.sosBtn, { backgroundColor: theme.colors.bgDanger, borderColor: theme.colors.borderDanger }]}
+                  >
+                    <Icon name="shield-alert" size={16} color={theme.colors.danger} />
+                    <Text style={[styles.sosBtnText, { color: theme.colors.danger }]}>Aviso Indisciplina</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => setConfirmSOS({ id: 'health', label: 'Enfermería / Salud', icon: 'heart-pulse', color: theme.colors.info, bg: theme.colors.bgInfo })}
+                    style={[styles.sosBtn, { backgroundColor: theme.colors.bgInfo, borderColor: theme.colors.borderInfo }]}
+                  >
+                    <Icon name="heart-pulse" size={16} color={theme.colors.info} />
+                    <Text style={[styles.sosBtnText, { color: theme.colors.info }]}>Aviso Enfermería</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Save button */}
+                <TouchableOpacity 
+                  onPress={handleSaveRegistro} 
+                  disabled={isOverLimit} 
+                  style={[styles.saveBtnPrimary, isOverLimit && { opacity: 0.5 }]}
+                >
+                  <Icon name="check" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+                  <Text style={styles.saveBtnText}>Guardar Asistencia y Nota del Docente</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* TAB 2: EXPEDIENTE 360 */}
+            {activeTab === 'expediente' && (
+              <View style={{ paddingBottom: 16 }}>
+                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statLabel}>Promedio SEP</Text>
+                    <Text style={[styles.statVal, { color: theme.colors.primary }]}>{student.historicalAverages.grade}</Text>
+                  </View>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statLabel}>Asistencia</Text>
+                    <Text style={[styles.statVal, { color: theme.colors.ok }]}>{student.historicalAverages.attendance}%</Text>
+                  </View>
+                </View>
+
+                {student.socialNote && !student.socialNote.includes('Ninguna') && (
+                  <View style={styles.socialNoteBox}>
+                    <Icon name="users" size={18} color={theme.colors.info} style={{ marginTop: 2 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.socialNoteTitle}>Nota de Trabajo Social:</Text>
+                      <Text style={styles.socialNoteText}>{student.socialNote}</Text>
+                    </View>
+                  </View>
+                )}
+
+                <Text style={styles.commentsHeading}>Comentarios de otros docentes</Text>
+                <View style={{ gap: 10 }}>
+                  {student.comments && student.comments.length > 0 ? (
+                    student.comments.map((comment, i) => (
+                      <View key={i} style={styles.commentBox}>
+                        <View style={styles.rowBetween}>
+                          <Text style={{ fontWeight: '700', color: theme.colors.textMain }}>{comment.author}</Text>
+                          <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>{comment.date}</Text>
+                        </View>
+                        <Text style={{ color: theme.colors.textMuted, fontSize: 13, marginTop: 4, lineHeight: 18 }}>"{comment.text}"</Text>
+                      </View>
+                    ))
+                  ) : (
+                    <View style={styles.emptyCommentsBox}>
+                      <Text style={styles.emptyCommentsText}>
+                        No hay comentarios recientes de otros docentes.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* TAB 3: EVALUACIÓN */}
+            {activeTab === 'evaluacion' && (
+              <View>
+                {activePlan ? (
+                  <>
+                    <View style={styles.activePlanBox}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <Icon name="calendar" size={16} color={theme.colors.primary} />
+                        <Text style={styles.activePlanTitle}>
+                          Planeación Activa
+                        </Text>
+                      </View>
+                      <Text style={styles.activePlanDesc}>
+                        {activeActivity ? activeActivity.desc : 'Actividad General de la Clase'}
+                      </Text>
+                      <Text style={styles.activePlanSub}>
+                        Evalúa el desempeño de {student.name.split(' ')[0]} en esta actividad específica.
+                      </Text>
+                    </View>
+
+                    <Text style={styles.sectionLabel}>
+                      Rúbrica Formativa:
+                    </Text>
+                    <View style={{ gap: 8, marginBottom: 20 }}>
+                      <TouchableOpacity
+                        onPress={() => setGradeRubric('logrado')}
+                        style={[
+                          styles.rubricBtn,
+                          gradeRubric === 'logrado' && { backgroundColor: theme.colors.bgOk, borderColor: theme.colors.ok, borderWidth: 2 }
+                        ]}
+                      >
+                        <Icon name="check-circle" size={18} color={gradeRubric === 'logrado' ? theme.colors.ok : theme.colors.textMain} />
+                        <Text style={[styles.rubricText, gradeRubric === 'logrado' && { color: theme.colors.ok }]}>Logro Esperado (Completó la actividad)</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setGradeRubric('proceso')}
+                        style={[
+                          styles.rubricBtn,
+                          gradeRubric === 'proceso' && { backgroundColor: theme.colors.bgWarn, borderColor: theme.colors.warn, borderWidth: 2 }
+                        ]}
+                      >
+                        <Icon name="clock" size={18} color={gradeRubric === 'proceso' ? theme.colors.warn : theme.colors.textMain} />
+                        <Text style={[styles.rubricText, gradeRubric === 'proceso' && { color: theme.colors.warn }]}>En Proceso (Incompleto o con dudas)</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setGradeRubric('apoyo')}
+                        style={[
+                          styles.rubricBtn,
+                          gradeRubric === 'apoyo' && { backgroundColor: theme.colors.bgDanger, borderColor: theme.colors.danger, borderWidth: 2 }
+                        ]}
+                      >
+                        <Icon name="alert-circle" size={18} color={gradeRubric === 'apoyo' ? theme.colors.danger : theme.colors.textMain} />
+                        <Text style={[styles.rubricText, gradeRubric === 'apoyo' && { color: theme.colors.danger }]}>Requiere Apoyo (No logró el objetivo)</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.sectionLabel}>
+                      Calificación Numérica (0-10):
+                    </Text>
+                    <TextInput 
+                      keyboardType="decimal-pad"
+                      value={String(gradeNumber)}
+                      onChangeText={setGradeNumber}
+                      placeholder="Ej: 8.5"
+                      placeholderTextColor={theme.colors.textMuted}
+                      style={styles.numericInput}
+                    />
+
+                    <TouchableOpacity onPress={handleSaveEvaluacion} style={styles.saveBtnPrimary}>
+                      <Icon name="save" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+                      <Text style={styles.saveBtnText}>Guardar Evaluación</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <View style={{ alignItems: 'center', paddingVertical: 32, paddingHorizontal: 16 }}>
+                    <Icon name="calendar" size={32} color={theme.colors.textMuted} style={{ marginBottom: 16 }} />
+                    <Text style={{ color: theme.colors.textMuted, textAlign: 'center', fontSize: 14, lineHeight: 20 }}>
+                      No hay una planeación activa o aprobada para el grupo de hoy. Genera y aprueba tu planeación en la pestaña "Planeación Inteligente" para poder evaluar esta actividad.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+          </ScrollView>
+        </TouchableOpacity>
+      </TouchableOpacity>
+
+      {/* Confirmation Modal for SOS Alerts */}
       {confirmSOS && (
-        <div className="bottom-sheet-overlay" style={{
-          alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1.5rem',
-          backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(4px)'
-        }} onClick={() => setConfirmSOS(null)}>
-          <div style={{ background: 'var(--bg-mobile)', border: '1px solid var(--border-light)', borderRadius: '16px', padding: '1.25rem', width: '100%', maxWidth: '290px', boxShadow: '0 10px 25px rgba(0,0,0,0.4)', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: confirmSOS.bg, color: confirmSOS.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem auto' }}>
-              <Icon name={confirmSOS.icon} size={24} />
-            </div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 0.4rem 0' }}>¿Estás seguro?</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 1.25rem 0', lineHeight: 1.4 }}>
-              ¿Deseas enviar un <strong>{confirmSOS.label}</strong> inmediato para <strong style={{ color: 'var(--text-main)' }}>{student.name}</strong>? Se notificará al instante a Prefectura / Dirección.
-            </p>
-            <div style={{ display: 'flex', gap: '0.6rem' }}>
-              <button onClick={() => setConfirmSOS(null)} style={{ flex: 1, padding: '0.6rem', borderRadius: '10px', border: '1px solid var(--border-light)', background: 'var(--bg-row)', color: 'var(--text-main)', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}>
-                Cancelar
-              </button>
-              <button onClick={handleConfirmSOSAction} style={{ flex: 1, padding: '0.6rem', borderRadius: '10px', border: 'none', background: confirmSOS.color, color: '#ffffff', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}>
-                Enviar Alerta
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal visible transparent animationType="fade">
+          <View style={styles.confirmSosOverlay}>
+            <View style={styles.confirmSosCard}>
+              <View style={[styles.confirmIconCircle, { backgroundColor: confirmSOS.bg }]}>
+                <Icon name={confirmSOS.icon} size={24} color={confirmSOS.color} />
+              </View>
+              <Text style={styles.confirmTitle}>¿Estás seguro?</Text>
+              <Text style={styles.confirmText}>
+                ¿Deseas enviar un <Text style={{ fontWeight: '800' }}>{confirmSOS.label}</Text> inmediato para <Text style={{ color: theme.colors.textMain, fontWeight: '800' }}>{student.name}</Text>? Se notificará al instante a Prefectura / Dirección.
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity onPress={() => setConfirmSOS(null)} style={styles.cancelSosBtn}>
+                  <Text style={{ color: theme.colors.textMain, fontWeight: '700', fontSize: 13 }}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleConfirmSOSAction} style={[styles.confirmSosBtn, { backgroundColor: confirmSOS.color }]}>
+                  <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 13 }}>Enviar Alerta</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       )}
-    </div>
+    </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    alignItems: 'stretch',
+    width: '100%',
+    margin: 0,
+    padding: 0,
+  },
+  bottomSheet: {
+    backgroundColor: theme.colors.bgMobile,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    width: '100%',
+    maxHeight: '94%',
+    padding: 16,
+    paddingBottom: 32,
+    margin: 0,
+    alignSelf: 'stretch',
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: theme.colors.borderLight,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  listNumText: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  studentTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: theme.colors.textMain,
+    marginTop: 2,
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  tabsNav: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+    marginBottom: 16,
+  },
+  tabItem: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabItemActive: {
+    borderBottomColor: theme.colors.primary,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+  },
+  tabTextActive: {
+    color: theme.colors.primary,
+  },
+  contentScroll: {
+    maxHeight: 450,
+  },
+  sectionBlock: {
+    marginBottom: 18,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+    letterSpacing: 0.5,
+  },
+  rowGap: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  toggleBtn: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    backgroundColor: theme.colors.bgRow,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  toggleBtnInactive: {},
+  presentActive: {
+    borderWidth: 2,
+    borderColor: theme.colors.ok,
+    backgroundColor: theme.colors.bgOk,
+  },
+  absentActive: {
+    borderWidth: 2,
+    borderColor: theme.colors.danger,
+    backgroundColor: theme.colors.bgDanger,
+  },
+  toggleBtnText: {
+    fontWeight: '700',
+    fontSize: 13,
+    color: theme.colors.textMuted,
+  },
+  wordCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+  },
+  textArea: {
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    backgroundColor: theme.colors.bgRow,
+    fontSize: 13,
+    color: theme.colors.textMain,
+    textAlignVertical: 'top',
+    minHeight: 70,
+  },
+  limitWarnText: {
+    color: theme.colors.danger,
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  presetCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  presetIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  presetTitle: {
+    fontWeight: '700',
+    fontSize: 13,
+    color: theme.colors.textMain,
+  },
+  presetSub: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    marginTop: 2,
+  },
+  sosBtn: {
+    flex: 1,
+    padding: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  sosBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  saveBtnPrimary: {
+    backgroundColor: theme.colors.ok,
+    paddingVertical: 14,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  saveBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  statVal: {
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  socialNoteBox: {
+    backgroundColor: theme.colors.bgInfo,
+    borderColor: theme.colors.borderInfo,
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  socialNoteTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.info,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  socialNoteText: {
+    fontSize: 13,
+    color: theme.colors.info,
+  },
+  commentsHeading: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: theme.colors.textMain,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+  },
+  commentBox: {
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+  },
+  emptyCommentsBox: {
+    padding: 16,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.borderLight,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  emptyCommentsText: {
+    color: theme.colors.textLight,
+    fontSize: 13,
+    fontStyle: 'italic',
+  },
+  activePlanBox: {
+    backgroundColor: theme.colors.bgPrimary,
+    borderColor: theme.colors.borderPrimary,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+  },
+  activePlanTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: theme.colors.primary,
+    textTransform: 'uppercase',
+  },
+  activePlanDesc: {
+    fontSize: 13.5,
+    color: theme.colors.textMain,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  activePlanSub: {
+    fontSize: 11.5,
+    color: theme.colors.textMuted,
+  },
+  rubricBtn: {
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  rubricText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textMain,
+  },
+  numericInput: {
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    backgroundColor: theme.colors.bgRow,
+    fontSize: 16,
+    color: theme.colors.textMain,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  confirmSosOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  confirmSosCard: {
+    backgroundColor: theme.colors.bgMobile,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  confirmIconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  confirmTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: theme.colors.textMain,
+    marginBottom: 6,
+  },
+  confirmText: {
+    fontSize: 13,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  cancelSosBtn: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    backgroundColor: theme.colors.bgRow,
+    alignItems: 'center',
+  },
+  confirmSosBtn: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+});
