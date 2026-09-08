@@ -1,15 +1,24 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+let supabaseUrl = null;
+let supabaseAnonKey = null;
 
-let supabase;
-
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey)
-  console.log('Supabase initialized successfully')
-} else {
-  console.warn('Supabase config missing. Running in local mock mode.')
+try {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  }
+} catch {
+  // Hermes / React Native fallback
 }
 
-export { supabase }
+let supabase = null;
+
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  console.log('Supabase initialized successfully');
+} else {
+  console.warn('Supabase config missing. Running in local mock mode.');
+}
+
+export { supabase };

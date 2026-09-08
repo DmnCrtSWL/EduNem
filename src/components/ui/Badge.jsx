@@ -1,76 +1,58 @@
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
 export default function Badge({
   children,
-  type = 'normal', // normal, success, warning, danger, info, ai
+  type = 'normal',
   icon = null,
   size = 'md',
-  className = '',
   style = {}
 }) {
-  const baseStyles = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '0.35rem',
-    fontWeight: '600',
-    fontFamily: 'var(--font-body)',
-    borderRadius: 'var(--radius-full)',
-    lineHeight: 1,
-    whiteSpace: 'nowrap',
-    transition: 'all 0.2s ease',
-    ...style
+  const sizeStyles = {
+    sm: { paddingHorizontal: 8, paddingVertical: 3, fontSize: 11 },
+    md: { paddingHorizontal: 10, paddingVertical: 4, fontSize: 12 },
+    lg: { paddingHorizontal: 12, paddingVertical: 6, fontSize: 14 }
   };
 
-  const sizes = {
-    sm: { padding: '0.25rem 0.6rem', fontSize: '0.75rem' },
-    md: { padding: '0.35rem 0.8rem', fontSize: '0.85rem' },
-    lg: { padding: '0.45rem 1rem', fontSize: '0.95rem' }
+  const typeStyles = {
+    normal: { bg: '#f8fafc', color: '#64748b', border: '#e2e8f0' },
+    success: { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' },
+    warning: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' },
+    danger: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
+    info: { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+    ai: { bg: '#f3e8ff', color: '#7c3aed', border: '#ddd6fe' }
   };
 
-  const types = {
-    normal: {
-      background: 'rgba(255, 255, 255, 0.08)',
-      color: 'var(--text-secondary)',
-      border: '1px solid rgba(255, 255, 255, 0.05)'
-    },
-    success: {
-      background: 'var(--color-success-bg)',
-      color: '#34d399',
-      border: '1px solid rgba(16, 185, 129, 0.3)'
-    },
-    warning: {
-      background: 'var(--color-warning-bg)',
-      color: '#fbbf24',
-      border: '1px solid rgba(245, 158, 11, 0.3)'
-    },
-    danger: {
-      background: 'var(--color-danger-bg)',
-      color: '#f87171',
-      border: '1px solid rgba(239, 68, 68, 0.3)'
-    },
-    info: {
-      background: 'var(--color-info-bg)',
-      color: '#60a5fa',
-      border: '1px solid rgba(59, 130, 246, 0.3)'
-    },
-    ai: {
-      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)',
-      color: '#a78bfa',
-      border: '1px solid rgba(139, 92, 246, 0.4)',
-      boxShadow: '0 0 10px rgba(139, 92, 246, 0.15)'
-    }
-  };
-
-  const combinedStyles = {
-    ...baseStyles,
-    ...sizes[size],
-    ...types[type]
-  };
+  const t = typeStyles[type] || typeStyles.normal;
+  const s = sizeStyles[size] || sizeStyles.md;
 
   return (
-    <span style={combinedStyles} className={className}>
-      {icon && <span style={{ fontSize: '1.1em' }}>{icon}</span>}
-      <span>{children}</span>
-    </span>
+    <View style={[
+      styles.badge,
+      { backgroundColor: t.bg, borderColor: t.border, paddingHorizontal: s.paddingHorizontal, paddingVertical: s.paddingVertical },
+      style
+    ]}>
+      {icon && <View style={styles.iconContainer}>{icon}</View>}
+      <Text style={[styles.text, { color: t.color, fontSize: s.fontSize }]}>
+        {children}
+      </Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 4,
+    alignSelf: 'flex-start',
+  },
+  iconContainer: {
+    marginRight: 2,
+  },
+  text: {
+    fontWeight: '700',
+  },
+});

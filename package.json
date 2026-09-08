@@ -1,24 +1,34 @@
 {
   "name": "educacion",
+  "main": "index.js",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "expo": "expo start",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "buffer": "^6.0.3",
+    "expo": "^57.0.21",
+    "expo-asset": "^57.0.16",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "^0.21.2",
+    "react-native-webview": "13.16.1",
     "vite-plugin-pwa": "^1.3.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "babel-preset-expo": "^57.0.11",
     "oxlint": "^1.71.0",
     "pg": "^8.23.0",
     "supabase": "^2.116.0",

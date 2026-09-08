@@ -1,5 +1,7 @@
 import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import Badge from '../ui/Badge';
+import { theme } from '../../theme/tokens';
 
 export default function DirectorPrivacyTemplate({ student, visibility, onToggleVisibility }) {
   if (!student) return null;
@@ -13,92 +15,167 @@ export default function DirectorPrivacyTemplate({ student, visibility, onToggleV
   ];
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <div className="glass-panel" style={{
-        padding: '1.5rem',
-        marginBottom: '1.5rem',
-        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(19, 27, 46, 0.9) 100%)',
-        border: '1px solid rgba(245, 158, 11, 0.4)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>👑</span>
-          <div>
-            <h2 style={{ fontSize: '1.4rem', margin: 0, color: '#ffffff' }}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.headerBanner}>
+        <View style={styles.headerRow}>
+          <Text style={{ fontSize: 32 }}>👑</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>
               Dirección y Subdirección: Configuración de Plantilla Pública para Padres
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
-              Control total del plantel: Enciende o apaga interruptores para decidir qué tarjetas de información verán los padres de familia en su portal web al consultar a <strong>{student.name}</strong>.
-            </p>
-          </div>
-        </div>
-      </div>
+            </Text>
+            <Text style={styles.headerDesc}>
+              Control total del plantel: Enciende o apaga interruptores para decidir qué tarjetas de información verán los padres de familia en su portal web al consultar a <Text style={{ fontWeight: '800', color: '#ffffff' }}>{student.name}</Text>.
+            </Text>
+          </View>
+        </View>
+      </View>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <View style={{ gap: 12 }}>
         {cards.map(card => {
           const isVisible = visibility[card.id];
 
           return (
-            <div
+            <TouchableOpacity
               key={card.id}
-              onClick={() => onToggleVisibility(card.id)}
-              className="glass-panel touch-target"
-              style={{
-                padding: '1.25rem 1.5rem',
-                cursor: 'pointer',
-                background: isVisible ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)',
-                border: isVisible ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '1rem',
-                transition: 'all 0.2s ease'
-              }}
+              onPress={() => onToggleVisibility(card.id)}
+              activeOpacity={0.8}
+              style={[
+                styles.toggleCard,
+                isVisible ? styles.cardVisible : styles.cardHidden
+              ]}
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-                  <h4 style={{ fontSize: '1.05rem', color: '#ffffff', margin: 0 }}>
+              <View style={{ flex: 1 }}>
+                <View style={styles.cardTitleRow}>
+                  <Text style={styles.cardTitleText}>
                     {card.title}
-                  </h4>
+                  </Text>
                   {card.sensitive && (
-                    <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '4px', fontWeight: '700' }}>
-                      🔒 Confidencial / Interno
-                    </span>
+                    <View style={styles.sensitiveTag}>
+                      <Text style={styles.sensitiveTagText}>🔒 Confidencial</Text>
+                    </View>
                   )}
-                </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+                </View>
+                <Text style={styles.cardDescText}>
                   {card.desc}
-                </p>
-              </div>
+                </Text>
+              </View>
 
               {/* Toggle Switch */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: isVisible ? '#34d399' : '#64748b' }}>
-                  {isVisible ? '🟢 PÚBLICO (PADRES VEO)' : '⚫ OCULTO (SOLO DOCENTES)'}
-                </span>
-                <div style={{
-                  width: '56px',
-                  height: '30px',
-                  background: isVisible ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: 'var(--radius-full)',
-                  position: 'relative',
-                  transition: 'background 0.3s ease',
-                  padding: '3px'
-                }}>
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    background: '#ffffff',
-                    borderRadius: '50%',
-                    transform: isVisible ? 'translateX(26px)' : 'translateX(0)',
-                    transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
-                  }} />
-                </div>
-              </div>
-            </div>
+              <View style={styles.switchCol}>
+                <Text style={[styles.statusText, isVisible ? { color: '#34d399' } : { color: '#64748b' }]}>
+                  {isVisible ? '🟢 PÚBLICO' : '⚫ OCULTO'}
+                </Text>
+                <View style={[styles.switchTrack, isVisible ? { backgroundColor: '#10b981' } : { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+                  <View style={[styles.switchThumb, isVisible && { transform: [{ translateX: 24 }] }]} />
+                </View>
+              </View>
+            </TouchableOpacity>
           );
         })}
-      </div>
-    </div>
+      </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.bgMobile,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  headerBanner: {
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  headerDesc: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    lineHeight: 16,
+  },
+  toggleCard: {
+    padding: 16,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  cardVisible: {
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    borderWidth: 1,
+  },
+  cardHidden: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 4,
+  },
+  cardTitleText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  sensitiveTag: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+  },
+  sensitiveTagText: {
+    color: '#f87171',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  cardDescText: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    lineHeight: 16,
+  },
+  switchCol: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  switchTrack: {
+    width: 52,
+    height: 28,
+    borderRadius: 14,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  switchThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+  },
+});
+
