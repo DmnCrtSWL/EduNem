@@ -75,10 +75,14 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
 
         <TouchableOpacity
           onPress={() => setShowNotifyConfig(!showNotifyConfig)}
-          style={[styles.notifyPill, pushEnabled && styles.notifyPillActive]}
+          style={[
+            styles.notifyPill,
+            { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
+            pushEnabled && styles.notifyPillActive
+          ]}
         >
-          <Icon name="bell" size={14} color={pushEnabled ? '#059669' : '#64748b'} />
-          <Text style={[styles.notifyPillText, pushEnabled && styles.notifyPillTextActive]}>
+          <Icon name="bell" size={14} color={pushEnabled ? theme.colors.ok : theme.colors.textMuted} />
+          <Text style={[styles.notifyPillText, { color: theme.colors.textMuted }, pushEnabled && styles.notifyPillTextActive]}>
             {pushEnabled ? `Alerta: ${pushMinutes}m` : 'Alertas Off'}
           </Text>
         </TouchableOpacity>
@@ -86,13 +90,13 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
 
       {/* Push Config */}
       {showNotifyConfig && (
-        <View style={styles.notifyConfigBox}>
+        <View style={[styles.notifyConfigBox, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
           <View style={styles.notifyConfigHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={styles.notifyIconBadge}>
-                <Icon name="bell" size={14} color="#059669" />
+              <View style={[styles.notifyIconBadge, { backgroundColor: theme.colors.bgOk }]}>
+                <Icon name="bell" size={14} color={theme.colors.ok} />
               </View>
-              <Text style={styles.notifyConfigTitle}>Notificaciones Push de Clase</Text>
+              <Text style={[styles.notifyConfigTitle, { color: theme.colors.textMain }]}>Notificaciones Push de Clase</Text>
             </View>
             <TouchableOpacity
               onPress={() => setPushEnabled(!pushEnabled)}
@@ -102,15 +106,15 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.notifyConfigDesc}>
+          <Text style={[styles.notifyConfigDesc, { color: theme.colors.textMuted }]}>
             {pushEnabled
               ? 'Te enviaremos un aviso push al celular antes de iniciar cada clase para recordar aula y grupo.'
               : 'Las alertas automáticas de horario están apagadas.'}
           </Text>
 
           {pushEnabled && (
-            <View style={styles.leadTimeSection}>
-              <Text style={styles.leadTimeTitle}>ANTICIPACIÓN DEL AVISO AL CELULAR:</Text>
+            <View style={[styles.leadTimeSection, { borderTopColor: theme.colors.borderLight }]}>
+              <Text style={[styles.leadTimeTitle, { color: theme.colors.textMuted }]}>ANTICIPACIÓN DEL AVISO AL CELULAR:</Text>
               <View style={styles.leadTimeRow}>
                 {[
                   { label: 'Nunca', value: 'off' },
@@ -122,11 +126,13 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
                     onPress={() => setPushMinutes(opt.value)}
                     style={[
                       styles.leadTimeBtn,
+                      { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
                       pushMinutes === opt.value && styles.leadTimeBtnActive
                     ]}
                   >
                     <Text style={[
                       styles.leadTimeBtnText,
+                      { color: theme.colors.textMuted },
                       pushMinutes === opt.value && styles.leadTimeBtnTextActive
                     ]}>
                       {opt.label}
@@ -242,9 +248,9 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
         <View style={styles.threeDaysContainer}>
           <View style={styles.multiColumnHeaderRow}>
             {WEEK_DAYS.slice(0, 3).map((d) => (
-              <View key={d.id} style={[styles.dayHeaderCol, d.id === 2 && styles.dayHeaderColActive]}>
-                <Text style={[styles.dayHeaderShort, d.id === 2 && styles.dayHeaderShortActive]}>{d.short.toUpperCase()}</Text>
-                <Text style={[styles.dayHeaderNum, d.id === 2 && styles.dayHeaderNumActive]}>{d.dateNum}</Text>
+              <View key={d.id} style={[styles.dayHeaderCol, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }, d.id === 2 && styles.dayHeaderColActive]}>
+                <Text style={[styles.dayHeaderShort, { color: theme.colors.textMuted }, d.id === 2 && styles.dayHeaderShortActive]}>{d.short.toUpperCase()}</Text>
+                <Text style={[styles.dayHeaderNum, { color: theme.colors.textMain }, d.id === 2 && styles.dayHeaderNumActive]}>{d.dateNum}</Text>
               </View>
             ))}
           </View>
@@ -255,12 +261,12 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
                 {SCHEDULE_BLOCKS.filter(b => b.day === dayId).map((block, idx) => (
                   <TouchableOpacity
                     key={idx}
-                    style={[styles.smallCard, { borderLeftColor: block.color, backgroundColor: block.bg, borderColor: block.border }]}
+                    style={[styles.smallCard, { borderLeftColor: block.color, backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.9)' : block.bg, borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : block.border }]}
                     onPress={() => handleSelectBlock(block.id)}
                   >
                     <Text style={[styles.smallCardTime, { color: block.color }]}>{block.timeStr.split(' - ')[0]}</Text>
-                    <Text style={styles.smallCardTitle}>{block.title.split(' - ')[0]}</Text>
-                    <Text style={styles.smallCardRoom}>{block.room.split(' - ')[0]}</Text>
+                    <Text style={[styles.smallCardTitle, { color: theme.colors.textMain }]}>{block.title.split(' - ')[0]}</Text>
+                    <Text style={[styles.smallCardRoom, { color: theme.colors.textMuted }]}>{block.room.split(' - ')[0]}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -274,9 +280,9 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
         <View style={styles.threeDaysContainer}>
           <View style={styles.multiColumnHeaderRow}>
             {WEEK_DAYS.map((d) => (
-              <View key={d.id} style={[styles.dayHeaderCol, d.id === 2 && styles.dayHeaderColActive]}>
-                <Text style={[styles.dayHeaderShort, d.id === 2 && styles.dayHeaderShortActive]}>{d.short}</Text>
-                <Text style={[styles.dayHeaderNum, d.id === 2 && styles.dayHeaderNumActive]}>{d.dateNum}</Text>
+              <View key={d.id} style={[styles.dayHeaderCol, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }, d.id === 2 && styles.dayHeaderColActive]}>
+                <Text style={[styles.dayHeaderShort, { color: theme.colors.textMuted }, d.id === 2 && styles.dayHeaderShortActive]}>{d.short}</Text>
+                <Text style={[styles.dayHeaderNum, { color: theme.colors.textMain }, d.id === 2 && styles.dayHeaderNumActive]}>{d.dateNum}</Text>
               </View>
             ))}
           </View>
@@ -287,11 +293,11 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
                 {SCHEDULE_BLOCKS.filter(b => b.day === d.id).map((block, idx) => (
                   <TouchableOpacity
                     key={idx}
-                    style={[styles.smallCard, { borderLeftColor: block.color, backgroundColor: block.bg, borderColor: block.border, paddingHorizontal: 3, paddingVertical: 6 }]}
+                    style={[styles.smallCard, { borderLeftColor: block.color, backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.9)' : block.bg, borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : block.border, paddingHorizontal: 3, paddingVertical: 6 }]}
                     onPress={() => handleSelectBlock(block.id)}
                   >
                     <Text style={[styles.smallCardTime, { color: block.color, fontSize: 9 }]}>{block.timeStr.split(' - ')[0]}</Text>
-                    <Text style={[styles.smallCardTitle, { fontSize: 10 }]} numberOfLines={1}>{block.title.split(' - ')[0]}</Text>
+                    <Text style={[styles.smallCardTitle, { color: theme.colors.textMain, fontSize: 10 }]} numberOfLines={1}>{block.title.split(' - ')[0]}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -302,17 +308,17 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
 
       {/* TAB 4: MES */}
       {calendarView === 'month' && (
-        <View style={styles.monthCard}>
+        <View style={[styles.monthCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
           <View style={styles.monthHeaderRow}>
-            <Text style={styles.monthTitle}>Julio / Agosto 2026</Text>
-            <View style={styles.monthPill}>
-              <Text style={styles.monthPillText}>4 Semanas Hábiles</Text>
+            <Text style={[styles.monthTitle, { color: theme.colors.textMain }]}>Julio / Agosto 2026</Text>
+            <View style={[styles.monthPill, { backgroundColor: theme.colors.bgMobile }]}>
+              <Text style={[styles.monthPillText, { color: theme.colors.textMuted }]}>4 Semanas Hábiles</Text>
             </View>
           </View>
 
-          <View style={styles.monthDaysHeader}>
+          <View style={[styles.monthDaysHeader, { borderBottomColor: theme.colors.borderLight }]}>
             {['Lun', 'Mar', 'Mié', 'Jue', 'Vie'].map((day, i) => (
-              <Text key={i} style={styles.monthDayHeaderText}>{day}</Text>
+              <Text key={i} style={[styles.monthDayHeaderText, { color: theme.colors.textMuted }]}>{day}</Text>
             ))}
           </View>
 
@@ -329,11 +335,15 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
                   return (
                     <TouchableOpacity
                       key={dateNum}
-                      style={[styles.monthDayCell, isSelected && styles.monthDayCellSelected]}
+                      style={[
+                        styles.monthDayCell,
+                        { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight },
+                        isSelected && styles.monthDayCellSelected
+                      ]}
                       onPress={() => handleSelectBlock('2b')}
                     >
                       <View style={[styles.dayNumBubble, isSelected && styles.dayNumBubbleSelected]}>
-                        <Text style={[styles.monthDayNum, isSelected && styles.monthDayNumSelected]}>{dateNum}</Text>
+                        <Text style={[styles.monthDayNum, { color: theme.colors.textMain }, isSelected && styles.monthDayNumSelected]}>{dateNum}</Text>
                       </View>
                       <View style={styles.mBarsContainer}>
                         <View style={[styles.mBar, { backgroundColor: '#2563eb' }]} />
@@ -347,7 +357,7 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
             ))}
           </View>
 
-          <Text style={styles.monthFooterTip}>💡 Toca cualquier día en el calendario para ver su horario detallado.</Text>
+          <Text style={[styles.monthFooterTip, { color: theme.colors.textMuted }]}>💡 Toca cualquier día en el calendario para ver su horario detallado.</Text>
         </View>
       )}
 

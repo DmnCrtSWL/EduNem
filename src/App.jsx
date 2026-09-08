@@ -427,21 +427,21 @@ function AppContent() {
       {studentToConfirmAbsence && (
         <Modal transparent animationType="fade" visible={Boolean(studentToConfirmAbsence)}>
           <View style={styles.modalOverlay}>
-            <View style={styles.confirmBox}>
+            <View style={[styles.confirmBox, { backgroundColor: activeThemeObj.colors.bgMobile, borderColor: activeThemeObj.colors.borderLight, borderWidth: 1 }]}>
               <View style={[
                 styles.confirmIconBadge,
-                { backgroundColor: studentToConfirmAbsence.attendance === 'absent' ? '#ecfdf5' : '#fef2f2' }
+                { backgroundColor: studentToConfirmAbsence.attendance === 'absent' ? activeThemeObj.colors.bgOk : activeThemeObj.colors.bgDanger }
               ]}>
                 <Icon
                   name={studentToConfirmAbsence.attendance === 'absent' ? 'check' : 'x'}
                   size={24}
-                  color={studentToConfirmAbsence.attendance === 'absent' ? '#059669' : '#dc2626'}
+                  color={studentToConfirmAbsence.attendance === 'absent' ? activeThemeObj.colors.ok : activeThemeObj.colors.danger}
                 />
               </View>
 
-              <Text style={styles.confirmTitle}>¿Estás seguro?</Text>
+              <Text style={[styles.confirmTitle, { color: activeThemeObj.colors.textMain }]}>¿Estás seguro?</Text>
               
-              <Text style={styles.confirmMessage}>
+              <Text style={[styles.confirmMessage, { color: activeThemeObj.colors.textMuted }]}>
                 {studentToConfirmAbsence.attendance === 'absent'
                   ? `¿Deseas registrar que ${studentToConfirmAbsence.name} sí asistió a clase?`
                   : `¿Deseas marcar falta (inasistencia) a ${studentToConfirmAbsence.name}?`}
@@ -450,9 +450,9 @@ function AppContent() {
               <View style={styles.confirmButtonsRow}>
                 <TouchableOpacity
                   onPress={() => setStudentToConfirmAbsence(null)}
-                  style={styles.cancelBtn}
+                  style={[styles.cancelBtn, { backgroundColor: activeThemeObj.colors.bgRow, borderColor: activeThemeObj.colors.borderLight, borderWidth: 1 }]}
                 >
-                  <Text style={styles.cancelBtnText}>Cancelar</Text>
+                  <Text style={[styles.cancelBtnText, { color: activeThemeObj.colors.textMain }]}>Cancelar</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
@@ -462,7 +462,7 @@ function AppContent() {
                   }}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: studentToConfirmAbsence.attendance === 'absent' ? '#059669' : '#dc2626' }
+                    { backgroundColor: studentToConfirmAbsence.attendance === 'absent' ? activeThemeObj.colors.ok : activeThemeObj.colors.danger }
                   ]}
                 >
                   <Text style={styles.actionBtnText}>

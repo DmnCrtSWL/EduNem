@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, StyleSheet, LayoutAnimation } from 'react-native';
 import Icon from '../ui/Icon';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
@@ -7,6 +7,11 @@ import { useTheme } from '../../context/ThemeContext';
 export default function StudentProfileModal({ student, group, monthlyPlans, onClose, onUpdateStudent, onTriggerSOS }) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('registro'); // 'registro', 'expediente', 'evaluacion'
+
+  const handleTabChange = (newTab) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setActiveTab(newTab);
+  };
   
   // Tab 1: Registro (EmojiPicker logic)
   const [note, setNote] = useState(student ? student.teacherNote || '' : '');
@@ -96,19 +101,19 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
           {/* Tabs Navigation */}
           <View style={styles.tabsNav}>
             <TouchableOpacity 
-              onPress={() => setActiveTab('registro')}
+              onPress={() => handleTabChange('registro')}
               style={[styles.tabItem, activeTab === 'registro' && styles.tabItemActive]}
             >
               <Text style={[styles.tabText, activeTab === 'registro' && styles.tabTextActive]}>Registro</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              onPress={() => setActiveTab('expediente')}
+              onPress={() => handleTabChange('expediente')}
               style={[styles.tabItem, activeTab === 'expediente' && styles.tabItemActive]}
             >
               <Text style={[styles.tabText, activeTab === 'expediente' && styles.tabTextActive]}>Expediente 360°</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              onPress={() => setActiveTab('evaluacion')}
+              onPress={() => handleTabChange('evaluacion')}
               style={[styles.tabItem, activeTab === 'evaluacion' && styles.tabItemActive]}
             >
               <Text style={[styles.tabText, activeTab === 'evaluacion' && styles.tabTextActive]}>Evaluación</Text>
@@ -129,21 +134,31 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                       onPress={() => setAttendance('present')}
                       style={[
                         styles.toggleBtn,
-                        attendance === 'present' ? styles.presentActive : styles.toggleBtnInactive
+                        { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
+                        attendance === 'present' && {
+                          borderWidth: 2,
+                          borderColor: theme.colors.ok,
+                          backgroundColor: theme.isDark ? 'rgba(5, 150, 105, 0.25)' : theme.colors.bgOk
+                        }
                       ]}
                     >
                       <Icon name="check" size={16} color={attendance === 'present' ? theme.colors.ok : theme.colors.textMuted} />
-                      <Text style={[styles.toggleBtnText, attendance === 'present' && { color: theme.colors.ok }]}>Presente (Default)</Text>
+                      <Text style={[styles.toggleBtnText, { color: attendance === 'present' ? theme.colors.ok : theme.colors.textMuted }]}>Presente (Default)</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => setAttendance('absent')}
                       style={[
                         styles.toggleBtn,
-                        attendance === 'absent' ? styles.absentActive : styles.toggleBtnInactive
+                        { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
+                        attendance === 'absent' && {
+                          borderWidth: 2,
+                          borderColor: theme.colors.danger,
+                          backgroundColor: theme.isDark ? 'rgba(220, 38, 38, 0.25)' : theme.colors.bgDanger
+                        }
                       ]}
                     >
                       <Icon name="user-x" size={16} color={attendance === 'absent' ? theme.colors.danger : theme.colors.textMuted} />
-                      <Text style={[styles.toggleBtnText, attendance === 'absent' && { color: theme.colors.danger }]}>Falta / Inasistencia</Text>
+                      <Text style={[styles.toggleBtnText, { color: attendance === 'absent' ? theme.colors.danger : theme.colors.textMuted }]}>Falta / Inasistencia</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -166,7 +181,11 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                     placeholderTextColor={theme.colors.textMuted}
                     value={note}
                     onChangeText={setNote}
-                    style={[styles.textArea, isOverLimit && { borderColor: theme.colors.danger, borderWidth: 2 }]}
+                    style={[
+                      styles.textArea,
+                      { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, color: theme.colors.textMain },
+                      isOverLimit && { borderColor: theme.colors.danger, borderWidth: 2 }
+                    ]}
                   />
                   {isOverLimit && (
                     <Text style={styles.limitWarnText}>
@@ -182,14 +201,14 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                 <View style={{ gap: 8, marginBottom: 20 }}>
                   <TouchableOpacity
                     onPress={() => handleSelectQuickPreset('energetic', 'excellent')}
-                    style={styles.presetCard}
+                    style={[styles.presetCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}
                   >
-                    <View style={[styles.presetIconBox, { backgroundColor: '#fef3c7' }]}>
+                    <View style={[styles.presetIconBox, { backgroundColor: theme.isDark ? '#451a03' : '#fef3c7' }]}>
                       <Icon name="star" size={20} color="#d97706" />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.presetTitle}>Destacado / Participación Activa</Text>
-                      <Text style={styles.presetSub}>Dominó el tema en clase o apoyó a sus compañeros</Text>
+                      <Text style={[styles.presetTitle, { color: theme.colors.textMain }]}>Destacado / Participación Activa</Text>
+                      <Text style={[styles.presetSub, { color: theme.colors.textMuted }]}>Dominó el tema en clase o apoyó a sus compañeros</Text>
                     </View>
                   </TouchableOpacity>
 
@@ -197,12 +216,12 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                     onPress={() => handleSelectQuickPreset('sad', 'doubts')}
                     style={[styles.presetCard, { backgroundColor: theme.colors.bgWarn, borderColor: theme.colors.borderWarn }]}
                   >
-                    <View style={[styles.presetIconBox, { backgroundColor: '#fef9c3' }]}>
+                    <View style={[styles.presetIconBox, { backgroundColor: theme.isDark ? '#422006' : '#fef9c3' }]}>
                       <Icon name="help-circle" size={20} color="#ca8a04" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.presetTitle, { color: theme.colors.warn }]}>Distraído / Bajo Ánimo / Dudas</Text>
-                      <Text style={styles.presetSub}>Requiere reforzamiento pedagógico o apoyo emocional</Text>
+                      <Text style={[styles.presetSub, { color: theme.colors.textMuted }]}>Requiere reforzamiento pedagógico o apoyo emocional</Text>
                     </View>
                   </TouchableOpacity>
 
@@ -210,12 +229,12 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                     onPress={() => handleSelectQuickPreset('normal', 'difficulty')}
                     style={[styles.presetCard, { backgroundColor: theme.colors.bgDanger, borderColor: theme.colors.borderDanger }]}
                   >
-                    <View style={[styles.presetIconBox, { backgroundColor: '#fee2e2' }]}>
+                    <View style={[styles.presetIconBox, { backgroundColor: theme.isDark ? '#450a0a' : '#fee2e2' }]}>
                       <Icon name="alert-triangle" size={20} color="#dc2626" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.presetTitle, { color: theme.colors.danger }]}>Dificultad Mayor / No Entregó</Text>
-                      <Text style={styles.presetSub}>No realizó la actividad asignada en el aula</Text>
+                      <Text style={[styles.presetSub, { color: theme.colors.textMuted }]}>No realizó la actividad asignada en el aula</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -258,22 +277,28 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
             {activeTab === 'expediente' && (
               <View style={{ paddingBottom: 16 }}>
                 <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-                  <View style={styles.statCard}>
+                  <View style={[styles.statCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
                     <Text style={styles.statLabel}>Promedio SEP</Text>
                     <Text style={[styles.statVal, { color: theme.colors.primary }]}>{student.historicalAverages.grade}</Text>
                   </View>
-                  <View style={styles.statCard}>
+                  <View style={[styles.statCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
                     <Text style={styles.statLabel}>Asistencia</Text>
                     <Text style={[styles.statVal, { color: theme.colors.ok }]}>{student.historicalAverages.attendance}%</Text>
                   </View>
                 </View>
 
                 {student.socialNote && !student.socialNote.includes('Ninguna') && (
-                  <View style={styles.socialNoteBox}>
-                    <Icon name="users" size={18} color={theme.colors.info} style={{ marginTop: 2 }} />
+                  <View style={[
+                    styles.socialNoteBox,
+                    {
+                      backgroundColor: theme.isDark ? '#1e3a8a33' : theme.colors.bgInfo,
+                      borderColor: theme.isDark ? '#1e40af' : theme.colors.borderInfo
+                    }
+                  ]}>
+                    <Icon name="users" size={18} color={theme.isDark ? '#60a5fa' : theme.colors.info} style={{ marginTop: 2 }} />
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.socialNoteTitle}>Nota de Trabajo Social:</Text>
-                      <Text style={styles.socialNoteText}>{student.socialNote}</Text>
+                      <Text style={[styles.socialNoteTitle, { color: theme.isDark ? '#60a5fa' : theme.colors.info }]}>Nota de Trabajo Social:</Text>
+                      <Text style={[styles.socialNoteText, { color: theme.isDark ? '#93c5fd' : theme.colors.info }]}>{student.socialNote}</Text>
                     </View>
                   </View>
                 )}
@@ -282,7 +307,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                 <View style={{ gap: 10 }}>
                   {student.comments && student.comments.length > 0 ? (
                     student.comments.map((comment, i) => (
-                      <View key={i} style={styles.commentBox}>
+                      <View key={i} style={[styles.commentBox, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
                         <View style={styles.rowBetween}>
                           <Text style={{ fontWeight: '700', color: theme.colors.textMain }}>{comment.author}</Text>
                           <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>{comment.date}</Text>
@@ -291,7 +316,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                       </View>
                     ))
                   ) : (
-                    <View style={styles.emptyCommentsBox}>
+                    <View style={[styles.emptyCommentsBox, { borderColor: theme.colors.borderLight }]}>
                       <Text style={styles.emptyCommentsText}>
                         No hay comentarios recientes de otros docentes.
                       </Text>
@@ -329,6 +354,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                         onPress={() => setGradeRubric('logrado')}
                         style={[
                           styles.rubricBtn,
+                          { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
                           gradeRubric === 'logrado' && { backgroundColor: theme.colors.bgOk, borderColor: theme.colors.ok, borderWidth: 2 }
                         ]}
                       >
@@ -339,6 +365,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                         onPress={() => setGradeRubric('proceso')}
                         style={[
                           styles.rubricBtn,
+                          { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
                           gradeRubric === 'proceso' && { backgroundColor: theme.colors.bgWarn, borderColor: theme.colors.warn, borderWidth: 2 }
                         ]}
                       >
@@ -349,6 +376,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                         onPress={() => setGradeRubric('apoyo')}
                         style={[
                           styles.rubricBtn,
+                          { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
                           gradeRubric === 'apoyo' && { backgroundColor: theme.colors.bgDanger, borderColor: theme.colors.danger, borderWidth: 2 }
                         ]}
                       >
@@ -366,7 +394,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                       onChangeText={setGradeNumber}
                       placeholder="Ej: 8.5"
                       placeholderTextColor={theme.colors.textMuted}
-                      style={styles.numericInput}
+                      style={[styles.numericInput, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]}
                     />
 
                     <TouchableOpacity onPress={handleSaveEvaluacion} style={styles.saveBtnPrimary}>
@@ -393,16 +421,16 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
       {confirmSOS && (
         <Modal visible transparent animationType="fade">
           <View style={styles.confirmSosOverlay}>
-            <View style={styles.confirmSosCard}>
+            <View style={[styles.confirmSosCard, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight }]}>
               <View style={[styles.confirmIconCircle, { backgroundColor: confirmSOS.bg }]}>
                 <Icon name={confirmSOS.icon} size={24} color={confirmSOS.color} />
               </View>
-              <Text style={styles.confirmTitle}>¿Estás seguro?</Text>
-              <Text style={styles.confirmText}>
-                ¿Deseas enviar un <Text style={{ fontWeight: '800' }}>{confirmSOS.label}</Text> inmediato para <Text style={{ color: theme.colors.textMain, fontWeight: '800' }}>{student.name}</Text>? Se notificará al instante a Prefectura / Dirección.
+              <Text style={[styles.confirmTitle, { color: theme.colors.textMain }]}>¿Estás seguro?</Text>
+              <Text style={[styles.confirmText, { color: theme.colors.textMuted }]}>
+                ¿Deseas enviar un <Text style={{ fontWeight: '800', color: confirmSOS.color }}>{confirmSOS.label}</Text> inmediato para <Text style={{ color: theme.colors.textMain, fontWeight: '800' }}>{student.name}</Text>? Se notificará al instante a Prefectura / Dirección.
               </Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity onPress={() => setConfirmSOS(null)} style={styles.cancelSosBtn}>
+                <TouchableOpacity onPress={() => setConfirmSOS(null)} style={[styles.cancelSosBtn, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
                   <Text style={{ color: theme.colors.textMain, fontWeight: '700', fontSize: 13 }}>Cancelar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleConfirmSOSAction} style={[styles.confirmSosBtn, { backgroundColor: confirmSOS.color }]}>
@@ -432,9 +460,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
-    maxHeight: '94%',
+    maxHeight: '92%',
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 24,
     margin: 0,
     alignSelf: 'stretch',
   },
@@ -493,7 +521,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   contentScroll: {
-    maxHeight: 450,
+    maxHeight: 640,
   },
   sectionBlock: {
     marginBottom: 18,

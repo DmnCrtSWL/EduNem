@@ -143,8 +143,12 @@ export default function StudentGrid({ groups, selectedGroupId, group, isClassInS
                 <View style={[
                   styles.avatar,
                   {
-                    backgroundColor: theme.isDark ? '#1e293b' : '#f8fafc',
-                    borderColor: theme.isDark ? 'transparent' : '#e2e8f0'
+                    backgroundColor: isAbsent
+                      ? (theme.isDark ? 'rgba(220, 38, 38, 0.2)' : '#fef2f2')
+                      : (theme.isDark ? '#1e293b' : '#f8fafc'),
+                    borderColor: isAbsent
+                      ? (theme.isDark ? 'rgba(220, 38, 38, 0.4)' : '#fecaca')
+                      : (theme.isDark ? 'transparent' : '#e2e8f0')
                   }
                 ]}>
                   <Text style={[
@@ -159,7 +163,8 @@ export default function StudentGrid({ groups, selectedGroupId, group, isClassInS
                   <Text
                     style={[
                       styles.studentName,
-                      { color: isAbsent ? theme.colors.danger : theme.colors.textMain }
+                      { color: isAbsent ? theme.colors.danger : theme.colors.textMain },
+                      isAbsent && styles.studentNameAbsent
                     ]}
                     numberOfLines={1}
                   >

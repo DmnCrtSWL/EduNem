@@ -61,89 +61,89 @@ export default function ParentPortal({ student, visibility }) {
       </View>
 
       <View style={styles.privacyNoteBox}>
-        <Text style={styles.privacyNoteText}>
-          🔒 <Text style={{ fontWeight: '800' }}>Nota de Privacidad:</Text> La información mostrada aquí es seleccionada y aprobada por la Dirección del plantel para el acompañamiento familiar en casa.
+        <Text style={[styles.privacyNoteText, { color: theme.colors.textMuted }]}>
+          🔒 <Text style={{ fontWeight: '800', color: theme.colors.textMain }}>Nota de Privacidad:</Text> La información mostrada aquí es seleccionada y aprobada por la Dirección del plantel para el acompañamiento familiar en casa.
         </Text>
       </View>
 
       {/* Grid of Public Cards */}
       <View style={{ gap: 16 }}>
         {visibility.grades && (
-          <View style={[styles.card, { borderLeftColor: '#10b981' }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, borderLeftColor: '#10b981' }]}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>📇 Calificaciones y Promedio Oficial SEP</Text>
+              <Text style={[styles.cardTitle, { color: theme.colors.textMain }]}>📇 Calificaciones y Promedio Oficial SEP</Text>
               <Badge type="success">Promedio: {student.historicalAverages.grade}</Badge>
             </View>
-            <Text style={styles.cardDesc}>
+            <Text style={[styles.cardDesc, { color: theme.colors.textMuted }]}>
               Avance del alumno en los 4 Campos Formativos de la Nueva Escuela Mexicana (NEM):
             </Text>
             <View style={styles.gradesGrid}>
-              <View style={styles.gradeItem}>
-                <Text style={styles.gradeItemLabel}>Saberes y Pensamiento Científico:</Text>
-                <Text style={styles.gradeItemVal}>8.5</Text>
+              <View style={[styles.gradeItem, { backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)' }]}>
+                <Text style={[styles.gradeItemLabel, { color: theme.colors.textMuted }]}>Saberes y Pensamiento Científico:</Text>
+                <Text style={[styles.gradeItemVal, { color: theme.colors.textMain }]}>8.5</Text>
               </View>
-              <View style={styles.gradeItem}>
-                <Text style={styles.gradeItemLabel}>Lenguajes (Español/Inglés):</Text>
-                <Text style={styles.gradeItemVal}>9.0</Text>
+              <View style={[styles.gradeItem, { backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)' }]}>
+                <Text style={[styles.gradeItemLabel, { color: theme.colors.textMuted }]}>Lenguajes (Español/Inglés):</Text>
+                <Text style={[styles.gradeItemVal, { color: theme.colors.textMain }]}>9.0</Text>
               </View>
-              <View style={styles.gradeItem}>
-                <Text style={styles.gradeItemLabel}>Ética, Naturaleza y Sociedades:</Text>
-                <Text style={styles.gradeItemVal}>8.8</Text>
+              <View style={[styles.gradeItem, { backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)' }]}>
+                <Text style={[styles.gradeItemLabel, { color: theme.colors.textMuted }]}>Ética, Naturaleza y Sociedades:</Text>
+                <Text style={[styles.gradeItemVal, { color: theme.colors.textMain }]}>8.8</Text>
               </View>
-              <View style={styles.gradeItem}>
-                <Text style={styles.gradeItemLabel}>De lo Humano y lo Comunitario:</Text>
-                <Text style={styles.gradeItemVal}>9.2</Text>
+              <View style={[styles.gradeItem, { backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)' }]}>
+                <Text style={[styles.gradeItemLabel, { color: theme.colors.textMuted }]}>De lo Humano y lo Comunitario:</Text>
+                <Text style={[styles.gradeItemVal, { color: theme.colors.textMain }]}>9.2</Text>
               </View>
             </View>
           </View>
         )}
 
         {visibility.behavior && (
-          <View style={[styles.card, { borderLeftColor: '#fbbf24' }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, borderLeftColor: '#fbbf24' }]}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>🚦 Semáforo de Conducta y Asistencia</Text>
+              <Text style={[styles.cardTitle, { color: theme.colors.textMain }]}>🚦 Semáforo de Conducta y Asistencia</Text>
               <Badge type="warning">Asistencia: {student.historicalAverages.attendance}%</Badge>
             </View>
-            <Text style={styles.cardDesc}>
+            <Text style={[styles.cardDesc, { color: theme.colors.textMuted }]}>
               El alumno mantiene una conducta constructiva en aula. Se registra puntualidad constante en las sesiones vespertinas.
             </Text>
           </View>
         )}
 
         {visibility.achievements && (
-          <View style={[styles.card, { borderLeftColor: '#a78bfa' }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, borderLeftColor: '#a78bfa' }]}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>🏆 Felicitaciones y Logros Destacados</Text>
+              <Text style={[styles.cardTitle, { color: theme.colors.textMain }]}>🏆 Felicitaciones y Logros Destacados</Text>
               <Badge type="ai">⭐ Destacado del Mes</Badge>
             </View>
-            <Text style={styles.cardDesc}>
+            <Text style={[styles.cardDesc, { color: theme.colors.textMuted }]}>
               Felicitación por parte del docente de Matemáticas debido a su participación entusiasta ⚡ en la resolución de problemas en el pizarrón.
             </Text>
           </View>
         )}
 
         {visibility.socialNotes && (
-          <View style={[styles.card, { borderLeftColor: '#3b82f6' }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, borderLeftColor: '#3b82f6' }]}>
             <Text style={[styles.cardTitle, { color: '#60a5fa', marginBottom: 8 }]}>🏥 Notas de Trabajo Social y Salud</Text>
-            <Text style={styles.cardDesc}>
+            <Text style={[styles.cardDesc, { color: theme.colors.textMuted }]}>
               {student.socialNote}
             </Text>
           </View>
         )}
 
         {visibility.aiAlerts && (
-          <View style={[styles.card, { borderLeftColor: '#ef4444' }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight, borderLeftColor: '#ef4444' }]}>
             <Text style={[styles.cardTitle, { color: '#f87171', marginBottom: 8 }]}>🚨 Alertas Tempranas IA</Text>
-            <Text style={styles.cardDesc}>
+            <Text style={[styles.cardDesc, { color: theme.colors.textMuted }]}>
               Análisis automático conductual en seguimiento escolar.
             </Text>
           </View>
         )}
 
         {!visibility.grades && !visibility.behavior && !visibility.achievements && !visibility.socialNotes && !visibility.aiAlerts && (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyCardTitle}>🔒 Todas las tarjetas han sido marcadas para uso interno por la Dirección.</Text>
-            <Text style={styles.emptyCardSub}>Consulte con la oficina del plantel para mayor información.</Text>
+          <View style={[styles.emptyCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+            <Text style={[styles.emptyCardTitle, { color: theme.colors.textMuted }]}>🔒 Todas las tarjetas han sido marcadas para uso interno por la Dirección.</Text>
+            <Text style={[styles.emptyCardSub, { color: theme.colors.textMuted }]}>Consulte con la oficina del plantel para mayor información.</Text>
           </View>
         )}
       </View>
