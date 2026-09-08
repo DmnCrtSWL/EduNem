@@ -28,16 +28,16 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
   const [isTyping, setIsTyping] = useState(false);
   const chatBottomRef = useRef(null);
 
-  if (!group || !monthlyPlans) return null;
-
-  const currentMonthData = monthlyPlans[group.id] || monthlyPlans['3a'];
-  const currentStage = currentMonthData.stage || 'step1_lema';
+  const currentMonthData = (group && monthlyPlans) ? (monthlyPlans[group.id] || monthlyPlans['3a']) : null;
+  const currentStage = currentMonthData ? (currentMonthData.stage || 'step1_lema') : 'step1_lema';
 
   useEffect(() => {
     if (chatBottomRef.current) {
       chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [currentStage, isTyping]);
+
+  if (!group || !monthlyPlans) return null;
 
   // Step 1: Send Teacher Motto (Lema / Filosofía) -> Go to Step 2
   const handleSendLema = () => {
