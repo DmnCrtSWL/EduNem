@@ -150,8 +150,7 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
         {[
           { id: 'today', label: 'Hoy', icon: 'calendar' },
           { id: '3days', label: '3 Días', icon: 'columns' },
-          { id: 'week', label: 'Semana', icon: 'grid' },
-          { id: 'month', label: 'Mes', icon: 'layout' }
+          { id: 'week', label: 'Semana', icon: 'grid' }
         ].map(tab => (
           <TouchableOpacity
             key={tab.id}
@@ -303,61 +302,6 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
               </View>
             ))}
           </View>
-        </View>
-      )}
-
-      {/* TAB 4: MES */}
-      {calendarView === 'month' && (
-        <View style={[styles.monthCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
-          <View style={styles.monthHeaderRow}>
-            <Text style={[styles.monthTitle, { color: theme.colors.textMain }]}>Julio / Agosto 2026</Text>
-            <View style={[styles.monthPill, { backgroundColor: theme.colors.bgMobile }]}>
-              <Text style={[styles.monthPillText, { color: theme.colors.textMuted }]}>4 Semanas Hábiles</Text>
-            </View>
-          </View>
-
-          <View style={[styles.monthDaysHeader, { borderBottomColor: theme.colors.borderLight }]}>
-            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie'].map((day, i) => (
-              <Text key={i} style={[styles.monthDayHeaderText, { color: theme.colors.textMuted }]}>{day}</Text>
-            ))}
-          </View>
-
-          <View style={styles.monthGrid}>
-            {[
-              [7, 8, 9, 10, 11],
-              [12, 13, 14, 15, 16],
-              [17, 18, 19, 20, 21],
-              [22, 23, 24, 25, 26]
-            ].map((week, wIdx) => (
-              <View key={wIdx} style={styles.monthWeekRow}>
-                {week.map((dateNum) => {
-                  const isSelected = dateNum === 26;
-                  return (
-                    <TouchableOpacity
-                      key={dateNum}
-                      style={[
-                        styles.monthDayCell,
-                        { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight },
-                        isSelected && styles.monthDayCellSelected
-                      ]}
-                      onPress={() => handleSelectBlock('2b')}
-                    >
-                      <View style={[styles.dayNumBubble, isSelected && styles.dayNumBubbleSelected]}>
-                        <Text style={[styles.monthDayNum, { color: theme.colors.textMain }, isSelected && styles.monthDayNumSelected]}>{dateNum}</Text>
-                      </View>
-                      <View style={styles.mBarsContainer}>
-                        <View style={[styles.mBar, { backgroundColor: '#2563eb' }]} />
-                        <View style={[styles.mBar, { backgroundColor: '#059669' }]} />
-                        <View style={[styles.mBar, { backgroundColor: '#d97706' }]} />
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            ))}
-          </View>
-
-          <Text style={[styles.monthFooterTip, { color: theme.colors.textMuted }]}>💡 Toca cualquier día en el calendario para ver su horario detallado.</Text>
         </View>
       )}
 
