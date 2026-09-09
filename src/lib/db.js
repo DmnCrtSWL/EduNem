@@ -1,74 +1,55 @@
-import { supabase } from './supabase';
-
-const TABLE_NAME = 'app_data';
 const GROUPS_ID = 'groups';
 const PLANS_ID = 'monthlyPlans';
 
-export async function fetchGroups() {
-  if (!supabase) return null;
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+
+async function fetchFromApi(id) {
   try {
-    const { data, error } = await supabase
-      .from(TABLE_NAME)
-      .select('data')
-      .eq('id', GROUPS_ID)
-      .single();
-      
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 is 'not found'
-    return data?.data || null;
+    const response = await fetch(`${API_BASE_URL}/api/data/${id}`);
+    if (!response.ok) throw new Error('Network response was not ok');
+    const { data } = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error fetching groups:", error);
+    console.error(`Error fetching ${id}:`, error);
     return null;
   }
+}
+
+async function saveToApi(id, data) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/data/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data })
+    });
+    if (!response.ok) throw new Error('Network response was not ok');
+  } catch (error) {
+    console.error(`Error saving ${id}:`, error);
+  }
+}
+
+export async function fetchGroups() {
+  return fetchFromApi(GROUPS_ID);
 }
 
 export async function saveGroups(groups) {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from(TABLE_NAME)
-      .upsert({ id: GROUPS_ID, data: groups });
-    if (error) throw error;
-  } catch (error) {
-    console.error("Error saving groups:", error);
-  }
+  return saveToApi(GROUPS_ID, groups);
 }
 
 export async function fetchMonthlyPlans() {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from(TABLE_NAME)
-      .select('data')
-      .eq('id', PLANS_ID)
-      .single();
-      
-    if (error && error.code !== 'PGRST116') throw error;
-    return data?.data || null;
-  } catch (error) {
-    console.error("Error fetching monthly plans:", error);
-    return null;
-  }
+  return fetchFromApi(PLANS_ID);
 }
 
 export async function saveMonthlyPlans(plans) {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from(TABLE_NAME)
-      .upsert({ id: PLANS_ID, data: plans });
-    if (error) throw error;
-  } catch (error) {
-    console.error("Error saving monthly plans:", error);
-  }
+  return saveToApi(PLANS_ID, plans);
 }
 
 export async function seedDatabase(mockGroups, mockPlans) {
-  if (!supabase) return;
   try {
-    console.log("Seeding Supabase database...");
+    console.log("Seeding Postgres database...");
     await saveGroups(mockGroups);
     await saveMonthlyPlans(mockPlans);
-    console.log("Supabase database seeded successfully!");
+    console.log("Database seeded successfully!");
   } catch (error) {
     console.error("Error seeding database:", error);
   }

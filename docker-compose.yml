@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: eduapp
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-supersecret}
+      POSTGRES_DB: eduapp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://eduapp:${DB_PASSWORD:-supersecret}@db:5432/eduapp
+      - PORT=3000
+    depends_on:
+      - db
+
+  frontend:
+    build: .
+    restart: always
+    ports:
+      - "9090:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
