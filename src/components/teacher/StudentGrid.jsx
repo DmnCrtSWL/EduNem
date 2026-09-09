@@ -19,11 +19,11 @@ export default function StudentGrid({ groups, selectedGroupId, group, isClassInS
 
   const filteredStudents = useMemo(() => {
     if (!group || !group.students) return [];
-    const filtered = group.students.filter(s => 
+    const filtered = group.students.filter(s =>
       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.listNumber.toString().includes(searchTerm)
     );
-    
+
     return filtered.sort((a, b) => {
       const aIsAbsent = a.attendance === 'absent' ? 1 : 0;
       const bIsAbsent = b.attendance === 'absent' ? 1 : 0;

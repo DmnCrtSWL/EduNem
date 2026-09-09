@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet, ActivityIndicator } from 'react-native';
-import { theme } from '../../theme/tokens';
+import Icon from '../ui/Icon';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SOSModal({ student, action, onClose, onConfirm }) {
+  const { theme } = useTheme();
   const [comment, setComment] = useState('');
   const [isSending, setIsSending] = useState(false);
 
@@ -13,7 +15,7 @@ export default function SOSModal({ student, action, onClose, onConfirm }) {
     setTimeout(() => {
       setIsSending(false);
       onConfirm(student, action, comment);
-    }, 800);
+    }, 400);
   };
 
   const isDiscipline = action.id === 'discipline';
@@ -21,46 +23,60 @@ export default function SOSModal({ student, action, onClose, onConfirm }) {
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={[styles.card, isDiscipline ? styles.disciplineCard : styles.infoCard]}>
-          <Text style={styles.iconText}>
-            {action.icon}
-          </Text>
+        <View style={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.bgMobile,
+            borderColor: isDiscipline ? theme.colors.danger : theme.colors.info,
+            borderWidth: 1.5
+          }
+        ]}>
+          <View style={[
+            styles.iconCircle,
+            { backgroundColor: isDiscipline ? (theme.isDark ? 'rgba(220, 38, 38, 0.25)' : '#fee2e2') : (theme.isDark ? 'rgba(37, 99, 235, 0.25)' : '#e0f2fe') }
+          ]}>
+            <Icon 
+              name={typeof action.icon === 'string' ? action.icon : (isDiscipline ? 'shield-alert' : 'heart-pulse')} 
+              size={28} 
+              color={isDiscipline ? theme.colors.danger : theme.colors.info} 
+            />
+          </View>
 
-          <Text style={styles.titleText}>
+          <Text style={[styles.titleText, { color: theme.colors.textMain }]}>
             {action.label}
           </Text>
 
-          <Text style={styles.subText}>
-            ¿Estás seguro de enviar esta notificación en tiempo real para el alumno <Text style={styles.boldText}>{student.name}</Text> (#{student.listNumber})?
+          <Text style={[styles.subText, { color: theme.colors.textMuted }]}>
+            ¿Estás seguro de enviar esta notificación en tiempo real para el alumno <Text style={[styles.boldText, { color: theme.colors.textMain }]}>{student.name}</Text> (#{student.listNumber})?
           </Text>
 
-          <View style={styles.inputBox}>
-            <Text style={styles.inputLabel}>
+          <View style={[styles.inputBox, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+            <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
               💬 Nota rápida opcional para {isDiscipline ? 'Prefectura' : 'Orientación'} (Máx 2 líneas):
             </Text>
             <TextInput
               placeholder={isDiscipline ? 'Ej: Salió del aula sin autorización / Falta de respeto...' : 'Ej: Dolor de cabeza severo / Solicita ver a su tutor...'}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={theme.colors.textMuted}
               value={comment}
               onChangeText={setComment}
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderLight, color: theme.colors.textMain }]}
             />
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelBtnText}>Cancelar</Text>
+            <TouchableOpacity onPress={onClose} style={[styles.cancelBtn, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+              <Text style={[styles.cancelBtnText, { color: theme.colors.textMain }]}>Cancelar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleSend}
               disabled={isSending}
-              style={[styles.confirmBtn, isDiscipline ? styles.confirmBtnDiscipline : styles.confirmBtnInfo, isSending && { opacity: 0.7 }]}
+              style={[styles.confirmBtn, { backgroundColor: isDiscipline ? theme.colors.danger : theme.colors.info }, isSending && { opacity: 0.7 }]}
             >
               {isSending ? (
                 <ActivityIndicator color="#ffffff" size="small" />
               ) : (
-                <Text style={styles.confirmBtnText}>🚨 Confirmar Alerta (1-Tap)</Text>
+                <Text style={styles.confirmBtnText}>Enviar Alerta</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -73,75 +89,63 @@ export default function SOSModal({ student, action, onClose, onConfirm }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
   },
   card: {
-    backgroundColor: '#131b2e',
     width: '100%',
     maxWidth: 350,
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 24,
     alignItems: 'center',
   },
-  disciplineCard: {
-    borderWidth: 2,
-    borderColor: '#ef4444',
-  },
-  infoCard: {
-    borderWidth: 2,
-    borderColor: '#3b82f6',
-  },
-  iconText: {
-    fontSize: 48,
-    marginBottom: 8,
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   titleText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '900',
     marginBottom: 8,
     textAlign: 'center',
   },
   subText: {
-    color: '#94a3b8',
-    fontSize: 14,
+    fontSize: 13.5,
     marginBottom: 20,
     textAlign: 'center',
     lineHeight: 20,
   },
   boldText: {
-    color: '#ffffff',
     fontWeight: '800',
   },
   inputBox: {
     width: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    padding: 14,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
     marginBottom: 20,
   },
   inputLabel: {
     fontSize: 12,
-    color: '#94a3b8',
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   textInput: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 10,
-    color: '#ffffff',
     fontSize: 13,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     width: '100%',
   },
   cancelBtn: {
@@ -149,13 +153,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelBtnText: {
-    color: '#ffffff',
     fontWeight: '700',
     fontSize: 13,
   },
@@ -165,12 +166,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  confirmBtnDiscipline: {
-    backgroundColor: '#ef4444',
-  },
-  confirmBtnInfo: {
-    backgroundColor: '#3b82f6',
   },
   confirmBtnText: {
     color: '#ffffff',
