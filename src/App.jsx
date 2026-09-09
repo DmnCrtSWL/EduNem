@@ -1,4 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+  Modal,
+  Platform,
+  useWindowDimensions,
+  LayoutAnimation,
+  UIManager,
+} from 'react-native';
 import Navbar from './components/layout/Navbar';
 import ClassSelector from './components/teacher/ClassSelector';
 import StudentGrid from './components/teacher/StudentGrid';
@@ -12,36 +25,52 @@ import TeacherSchedule from './components/teacher/TeacherSchedule';
 import Icon from './components/ui/Icon';
 import { detectActiveGroupByTime, mockGroups as initialGroups } from './data/mockGroups';
 import { mockAIPlans, defaultMonthlyData } from './data/mockAIPlans';
-import { fetchGroups, fetchMonthlyPlans, saveGroups, saveMonthlyPlans, seedDatabase } from './lib/db';
+import { fetchGroups, fetchMonthlyPlans, saveGroups, saveMonthlyPlans } from './lib/db';
 import LessonPlanViewer from './components/teacher/LessonPlanViewer';
 import PeriodGrading from './components/teacher/PeriodGrading';
 import Login from './components/layout/Login';
+import { theme } from './theme/tokens';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
-export default function App() {
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+function AppContent() {
+  const { theme: activeThemeObj, isDark, toggleTheme } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   
-  const [theme, setTheme] = useState('light');
   const [activeRole, setActiveRole] = useState('teacher'); // teacher, parent, director, social
-  const [activeTab, setActiveTab] = useState('pulse'); // pulse, ai-plan, reports
+  const [activeTab, setActiveTabRaw] = useState('pulse'); // pulse, schedule, planeaciones, ai-plan, reports
+
+  const setActiveTab = (tab) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setActiveTabRaw(tab);
+  };
+
+  const handleToggleTheme = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    toggleTheme();
+  };
   const [groups, setGroups] = useState(initialGroups);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [simulatedTime, setSimulatedTime] = useState(null);
 
-  const handleToggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
-  };
+  const { width } = useWindowDimensions();
+  const isLargeScreen = Platform.OS === 'web' && width > 500;
+
+
   const [selectedGroupId, setSelectedGroupId] = useState(() => {
     const detected = detectActiveGroupByTime(new Date());
     return detected.group.id;
   });
+
   const [selectedStudentForProfile, setSelectedStudentForProfile] = useState(null);
   const [selectedStudentForSOS, setSelectedStudentForSOS] = useState(null);
   const [studentToConfirmAbsence, setStudentToConfirmAbsence] = useState(null);
   const [sosAction, setSosAction] = useState(null);
-  const [aiPlans, setAiPlans] = useState(mockAIPlans);
+  const [, setAiPlans] = useState(mockAIPlans);
   const [monthlyPlans, setMonthlyPlans] = useState(defaultMonthlyData);
   const [parentVisibility, setParentVisibility] = useState({
     grades: true,
@@ -63,6 +92,8 @@ export default function App() {
     loadData();
   }, []);
 
+  const [simulatedGroupSession, setSimulatedGroupSession] = useState(null);
+
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
@@ -72,8 +103,10 @@ export default function App() {
     setSimulatedTime(dateObj);
     if (forcedGroupId) {
       setSelectedGroupId(forcedGroupId);
+      setSimulatedGroupSession(forcedGroupId);
       showToast(`Reloj CDMX simulado: Auto-seleccionando tu clase asignada (${forcedGroupId.toUpperCase()})`);
     } else {
+      setSimulatedGroupSession(null);
       const res = detectActiveGroupByTime(new Date());
       setSelectedGroupId(res.group.id);
       showToast(`🟢 Volviendo a reloj oficial CDMX en tiempo real`);
@@ -82,33 +115,17 @@ export default function App() {
 
   const currentGroup = groups.find(g => g.id === selectedGroupId) || groups[0];
   const activeResult = detectActiveGroupByTime(simulatedTime || new Date());
-  const isClassInSession = currentGroup.id === activeResult.group.id;
+  const isClassInSession = simulatedGroupSession ? currentGroup.id === simulatedGroupSession : currentGroup.id === activeResult.group.id;
 
   const handleSimulateClassClock = (groupId) => {
     const targetGroup = groups.find(g => g.id === groupId) || groups[0];
     const rule = targetGroup.scheduleRule;
     const now = new Date();
-    const simDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), rule.startHour, rule.startMin + 15, 0);
+    const validDay = (rule.days && rule.days.length > 0) ? rule.days[0] : 1;
+    const currentDay = now.getDay();
+    const dayDiff = validDay - currentDay;
+    const simDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayDiff, rule.startHour, rule.startMin + 15, 0);
     handleSimulateTime(simDate, groupId);
-  };
-
-  // Master OK button
-  const handleMarkAllOk = (groupId) => {
-    setGroups(prev => {
-      const next = prev.map(g => {
-        if (g.id !== groupId) return g;
-        return {
-          ...g,
-          students: g.students.map(s => {
-            if (s.status !== 'pending') return s;
-            return { ...s, status: 'ok', mood: 'normal', performance: 'normal' };
-          })
-        };
-      });
-      saveGroups(next);
-      return next;
-    });
-    showToast(`✓ ¡Listo! Asistencia y aprovechamiento normal marcado para los 42 alumnos.`);
   };
 
   const handleToggleAbsence = (studentId) => {
@@ -155,7 +172,7 @@ export default function App() {
     setSosAction(action);
   };
 
-  const handleConfirmSOS = (student, action, comment) => {
+  const handleConfirmSOS = (student) => {
     handleUpdateStudent(student.id, { sosReported: true });
     setSelectedStudentForSOS(null);
     setSosAction(null);
@@ -176,25 +193,6 @@ export default function App() {
       saveMonthlyPlans(next);
       return next;
     });
-  };
-
-  const handleSimplifyPlan = (groupId) => {
-    setAiPlans(prev => {
-      const p = prev[groupId];
-      return {
-        ...prev,
-        [groupId]: {
-          ...p,
-          status: 'simplified',
-          proposedPlan: {
-            ...p.proposedPlan,
-            duration: '40 min (Versión Sencilla)',
-            activities: p.proposedPlan.activities.map((a, i) => i === 1 ? { ...a, desc: 'Resolver en parejas 2 ejercicios del pizarrón usando hojas recicladas sin necesidad de internet en aula.' } : a)
-          }
-        }
-      };
-    });
-    showToast('✨ Actividad simplificada exitosamente');
   };
 
   const handleToggleVisibility = (cardId) => {
@@ -223,7 +221,7 @@ export default function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
-    setActiveRole('teacher'); // default reset
+    setActiveRole('teacher');
   };
 
   if (!isAuthenticated) {
@@ -231,271 +229,161 @@ export default function App() {
   }
 
   if (!isDataLoaded) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)' }}>Cargando datos seguros...</div>;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text style={styles.loadingText}>Cargando datos seguros...</Text>
+      </View>
+    );
   }
 
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+  const mainContent = (
+    <View style={[styles.appContainer, { backgroundColor: activeThemeObj.colors.bgApp }]}>
       {/* Toast Notification */}
       {toast && (
-        <div style={{
-          position: 'fixed',
-          top: '80px',
-          right: '20px',
-          zIndex: 9999,
-          background: '#0f172a',
-          color: '#ffffff',
-          padding: '0.85rem 1.25rem',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-          fontWeight: '700',
-          fontSize: '0.9rem',
-          border: '1px solid #334155',
-          animation: 'fadeIn 0.2s ease'
-        }}>
-          {toast.message}
-        </div>
+        <View style={styles.toastContainer}>
+          <Text style={styles.toastText}>{toast.message}</Text>
+        </View>
       )}
 
-      {/* Desktop Simulator Header */}
+      {/* Header Bar */}
       <Navbar
         activeRole={activeRole}
         onRoleChange={(role) => {
           setActiveRole(role);
           showToast(`Vista cambiada: ${role === 'teacher' ? 'App Móvil Docente' : role === 'parent' ? 'App Móvil Padres' : role === 'director' ? 'Web Admin Dirección' : 'Web Admin Trabajo Social'}`);
         }}
-        theme={theme}
+        theme={isDark ? 'dark' : 'light'}
         onToggleTheme={handleToggleTheme}
         onLogout={handleLogout}
         currentUser={currentUser}
       />
 
-      {/* MOBILE APP SIMULATION FRAME (Teacher & Parent) */}
-      {isMobileRole && (
-        <div className="mobile-simulator-wrapper">
-          <div className="mobile-phone-frame">
-            <div className="phone-notch"></div>
-
-            <div className="mobile-content-scroll">
-              {activeRole === 'teacher' && (
-                <>
-                  {activeTab === 'pulse' && (
-                    <>
-                      <ClassSelector
-                        groups={groups}
-                        selectedGroupId={selectedGroupId}
-                        simulatedTime={simulatedTime}
-                      />
-                      <StudentGrid
-                        group={currentGroup}
-                        isClassInSession={isClassInSession}
-                        onSimulateClassTime={() => handleSimulateClassClock(currentGroup.id)}
-                        onStudentClick={(s) => setSelectedStudentForProfile(s)}
-                        onToggleAbsence={handleToggleAbsence}
-                        onRequestToggleAbsence={(s) => setStudentToConfirmAbsence(s)}
-                      />
-                    </>
-                  )}
-
-                  {activeTab === 'schedule' && (
-                    <TeacherSchedule
-                      groups={groups}
-                      simulatedTime={simulatedTime}
-                      onSimulateTime={handleSimulateTime}
-                      onSelectGroup={(id) => {
-                        setSelectedGroupId(id);
-                        showToast(`Grupo activado: ${groups.find(g => g.id === id)?.name}`);
-                      }}
-                      onNavigateToList={() => setActiveTab('pulse')}
-                    />
-                  )}
-
-                  {activeTab === 'ai-plan' && (
-                    <AILessonPlanner
-                      group={currentGroup}
-                      monthlyPlans={monthlyPlans}
-                      onUpdateMonthlyPlans={handleUpdateMonthlyPlans}
-                      onNavigateToTab={setActiveTab}
-                      onApprove={handleApprovePlan}
-                    />
-                  )}
-
-                  {activeTab === 'planeaciones' && (
-                    <LessonPlanViewer
-                      group={currentGroup}
-                      monthlyPlans={monthlyPlans}
-                      onUpdateMonthlyPlans={handleUpdateMonthlyPlans}
-                      onNavigateToWizard={() => setActiveTab('ai-plan')}
-                      onApprove={handleApprovePlan}
-                    />
-                  )}
-
-                  {activeTab === 'reports' && (
-                    <PeriodGrading
-                      group={currentGroup}
-                      onUpdateStudent={handleUpdateStudent}
-                      showToast={showToast}
-                    />
-                  )}
-                </>
-              )}
-
-              {activeRole === 'parent' && (
-                <ParentPortal
-                  student={sampleStudentForRoles}
-                  visibility={parentVisibility}
+      {/* Main View Area */}
+      {isMobileRole ? (
+        <View style={styles.mobileArea}>
+          {activeRole === 'teacher' && (
+            <View style={styles.screenWrapper}>
+              {activeTab === 'pulse' && (
+                <StudentGrid
+                  groups={groups}
+                  selectedGroupId={selectedGroupId}
+                  group={currentGroup}
+                  isClassInSession={isClassInSession}
+                  onSimulateClassTime={() => handleSimulateClassClock(currentGroup.id)}
+                  onStudentClick={(s) => setSelectedStudentForProfile(s)}
+                  onToggleAbsence={handleToggleAbsence}
+                  onRequestToggleAbsence={(s) => setStudentToConfirmAbsence(s)}
                 />
               )}
-            </div>
 
-            {activeRole === 'teacher' && (
-              <nav className="mobile-bottom-nav">
-                <button
-                  className={`nav-item ${activeTab === 'pulse' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('pulse')}
-                >
-                  <span className="nav-item-icon"><Icon name="list" size={18} /></span>
-                  <span>Lista del Día</span>
-                </button>
+              {activeTab === 'schedule' && (
+                <TeacherSchedule
+                  groups={groups}
+                  simulatedTime={simulatedTime}
+                  onSimulateTime={handleSimulateTime}
+                  onSelectGroup={(id) => {
+                    setSelectedGroupId(id);
+                    showToast(`Grupo activado: ${groups.find(g => g.id === id)?.name}`);
+                  }}
+                  onNavigateToList={() => setActiveTab('pulse')}
+                />
+              )}
 
-                <button
-                  className={`nav-item ${activeTab === 'schedule' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('schedule')}
-                >
-                  <span className="nav-item-icon"><Icon name="clock" size={18} /></span>
-                  <span>Mi Horario</span>
-                </button>
+              {activeTab === 'ai-plan' && (
+                <AILessonPlanner
+                  group={currentGroup}
+                  monthlyPlans={monthlyPlans}
+                  onUpdateMonthlyPlans={handleUpdateMonthlyPlans}
+                  onNavigateToTab={setActiveTab}
+                  onApprove={handleApprovePlan}
+                />
+              )}
 
-                <button
-                  className={`nav-item ${activeTab === 'planeaciones' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('planeaciones')}
-                >
-                  <span className="nav-item-icon"><Icon name="book-open" size={18} /></span>
-                  <span>Planeaciones</span>
-                </button>
+              {activeTab === 'planeaciones' && (
+                <LessonPlanViewer
+                  group={currentGroup}
+                  monthlyPlans={monthlyPlans}
+                  onUpdateMonthlyPlans={handleUpdateMonthlyPlans}
+                  onNavigateToWizard={() => setActiveTab('ai-plan')}
+                  onApprove={handleApprovePlan}
+                />
+              )}
 
-                <button
-                  className={`nav-item ${activeTab === 'ai-plan' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('ai-plan')}
-                >
-                  <span className="nav-item-icon"><Icon name="sparkles" size={18} /></span>
-                  <span>Plan IA</span>
-                </button>
+              {activeTab === 'reports' && (
+                <PeriodGrading
+                  group={currentGroup}
+                  onUpdateStudent={handleUpdateStudent}
+                  showToast={showToast}
+                />
+              )}
+            </View>
+          )}
 
-                <button
-                  className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('reports')}
-                >
-                  <span className="nav-item-icon"><Icon name="award" size={18} /></span>
-                  <span>Evaluación</span>
-                </button>
-              </nav>
-            )}
+          {activeRole === 'parent' && (
+            <ParentPortal
+              student={sampleStudentForRoles}
+              visibility={parentVisibility}
+            />
+          )}
 
-            {selectedStudentForProfile && (
-              <StudentProfileModal
-                student={selectedStudentForProfile}
-                group={currentGroup}
-                monthlyPlans={monthlyPlans}
-                onClose={() => setSelectedStudentForProfile(null)}
-                onUpdateStudent={handleUpdateStudent}
-                onTriggerSOS={handleOpenSOS}
-              />
-            )}
+          {/* Bottom Navigation Bar */}
+          {activeRole === 'teacher' && (
+            <View style={[styles.bottomNav, { backgroundColor: activeThemeObj.colors.bgRow, borderTopColor: activeThemeObj.colors.borderLight }]}>
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => setActiveTab('pulse')}
+              >
+                <Icon name="list" size={18} color={activeTab === 'pulse' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted} />
+                <Text numberOfLines={1} style={[styles.navText, { color: activeTab === 'pulse' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted }, activeTab === 'pulse' && styles.navTextActive]}>
+                  Lista del Día
+                </Text>
+              </TouchableOpacity>
 
-            {selectedStudentForSOS && sosAction && (
-              <SOSModal
-                student={selectedStudentForSOS}
-                action={sosAction}
-                onClose={() => { setSelectedStudentForSOS(null); setSosAction(null); }}
-                onConfirm={handleConfirmSOS}
-              />
-            )}
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => setActiveTab('schedule')}
+              >
+                <Icon name="clock" size={18} color={activeTab === 'schedule' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted} />
+                <Text numberOfLines={1} style={[styles.navText, { color: activeTab === 'schedule' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted }, activeTab === 'schedule' && styles.navTextActive]}>
+                  Mi Horario
+                </Text>
+              </TouchableOpacity>
 
-            {/* Confirmation Modal for Attendance Toggle (Hijo directo del frame móvil, absolutamente inmune al scroll de la lista) */}
-            {studentToConfirmAbsence && (
-              <div className="bottom-sheet-overlay" style={{ alignItems: 'center', justifyContent: 'center', padding: '1.5rem', zIndex: 999 }} onClick={() => setStudentToConfirmAbsence(null)}>
-                <div style={{
-                  background: 'var(--bg-mobile)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: '16px',
-                  padding: '1.25rem',
-                  width: '100%',
-                  maxWidth: '300px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                  textAlign: 'center'
-                }} onClick={(e) => e.stopPropagation()}>
-                  <div style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '50%',
-                    background: studentToConfirmAbsence.attendance === 'absent' ? 'var(--bg-ok)' : 'var(--bg-danger)',
-                    color: studentToConfirmAbsence.attendance === 'absent' ? 'var(--color-ok)' : 'var(--color-danger)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 0.75rem auto'
-                  }}>
-                    <Icon name={studentToConfirmAbsence.attendance === 'absent' ? 'check' : 'x'} size={24} />
-                  </div>
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => setActiveTab('planeaciones')}
+              >
+                <Icon name="planeaciones" size={18} color={activeTab === 'planeaciones' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted} />
+                <Text numberOfLines={1} style={[styles.navText, { color: activeTab === 'planeaciones' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted }, activeTab === 'planeaciones' && styles.navTextActive]}>
+                  Planeaciones
+                </Text>
+              </TouchableOpacity>
 
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 0.4rem 0' }}>
-                    ¿Estás seguro?
-                  </h3>
-                  
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 1.25rem 0', lineHeight: 1.4 }}>
-                    {studentToConfirmAbsence.attendance === 'absent'
-                      ? `¿Deseas registrar que ${studentToConfirmAbsence.name} sí asistió a clase?`
-                      : `¿Deseas marcar falta (inasistencia) a ${studentToConfirmAbsence.name}?`}
-                  </p>
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => setActiveTab('ai-plan')}
+              >
+                <Icon name="sparkles" size={18} color={activeTab === 'ai-plan' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted} />
+                <Text numberOfLines={1} style={[styles.navText, { color: activeTab === 'ai-plan' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted }, activeTab === 'ai-plan' && styles.navTextActive]}>
+                  Plan IA
+                </Text>
+              </TouchableOpacity>
 
-                  <div style={{ display: 'flex', gap: '0.6rem' }}>
-                    <button
-                      onClick={() => setStudentToConfirmAbsence(null)}
-                      style={{
-                        flex: 1,
-                        padding: '0.6rem',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border-light)',
-                        background: 'var(--bg-row)',
-                        color: 'var(--text-main)',
-                        fontSize: '0.8rem',
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleToggleAbsence(studentToConfirmAbsence.id);
-                        setStudentToConfirmAbsence(null);
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '0.6rem',
-                        borderRadius: '10px',
-                        border: 'none',
-                        background: studentToConfirmAbsence.attendance === 'absent' ? 'var(--color-ok)' : 'var(--color-danger)',
-                        color: '#ffffff',
-                        fontSize: '0.8rem',
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {studentToConfirmAbsence.attendance === 'absent' ? 'Marcar Presente' : 'Marcar Falta'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* DESKTOP WEB ADMIN DASHBOARD VIEW (Director & Social Work) */}
-      {!isMobileRole && (
-        <main style={{ flex: 1, background: '#0f172a', color: '#f8fafc', padding: '2rem' }}>
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => setActiveTab('reports')}
+              >
+                <Icon name="check" size={18} color={activeTab === 'reports' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted} />
+                <Text numberOfLines={1} style={[styles.navText, { color: activeTab === 'reports' ? activeThemeObj.colors.primary : activeThemeObj.colors.textMuted }, activeTab === 'reports' && styles.navTextActive]}>
+                  Evaluación
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      ) : (
+        <View style={styles.adminArea}>
           {activeRole === 'director' && (
             <DirectorPrivacyTemplate
               student={sampleStudentForRoles}
@@ -510,8 +398,279 @@ export default function App() {
               onSaveNote={handleSaveSocialNote}
             />
           )}
-        </main>
+        </View>
       )}
-    </div>
+
+      {/* Student Profile Modal */}
+      {selectedStudentForProfile && (
+        <StudentProfileModal
+          student={selectedStudentForProfile}
+          group={currentGroup}
+          monthlyPlans={monthlyPlans}
+          onClose={() => setSelectedStudentForProfile(null)}
+          onUpdateStudent={handleUpdateStudent}
+          onTriggerSOS={handleOpenSOS}
+        />
+      )}
+
+      {/* SOS Alert Modal */}
+      {selectedStudentForSOS && sosAction && (
+        <SOSModal
+          student={selectedStudentForSOS}
+          action={sosAction}
+          onClose={() => { setSelectedStudentForSOS(null); setSosAction(null); }}
+          onConfirm={handleConfirmSOS}
+        />
+      )}
+
+      {/* Confirmation Modal for Attendance */}
+      {studentToConfirmAbsence && (
+        <Modal transparent animationType="fade" visible={Boolean(studentToConfirmAbsence)}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.confirmBox, { backgroundColor: activeThemeObj.colors.bgMobile, borderColor: activeThemeObj.colors.borderLight, borderWidth: 1 }]}>
+              <View style={[
+                styles.confirmIconBadge,
+                { backgroundColor: studentToConfirmAbsence.attendance === 'absent' ? activeThemeObj.colors.bgOk : activeThemeObj.colors.bgDanger }
+              ]}>
+                <Icon
+                  name={studentToConfirmAbsence.attendance === 'absent' ? 'check' : 'x'}
+                  size={24}
+                  color={studentToConfirmAbsence.attendance === 'absent' ? activeThemeObj.colors.ok : activeThemeObj.colors.danger}
+                />
+              </View>
+
+              <Text style={[styles.confirmTitle, { color: activeThemeObj.colors.textMain }]}>¿Estás seguro?</Text>
+              
+              <Text style={[styles.confirmMessage, { color: activeThemeObj.colors.textMuted }]}>
+                {studentToConfirmAbsence.attendance === 'absent'
+                  ? `¿Deseas registrar que ${studentToConfirmAbsence.name} sí asistió a clase?`
+                  : `¿Deseas marcar falta (inasistencia) a ${studentToConfirmAbsence.name}?`}
+              </Text>
+
+              <View style={styles.confirmButtonsRow}>
+                <TouchableOpacity
+                  onPress={() => setStudentToConfirmAbsence(null)}
+                  style={[styles.cancelBtn, { backgroundColor: activeThemeObj.colors.bgRow, borderColor: activeThemeObj.colors.borderLight, borderWidth: 1 }]}
+                >
+                  <Text style={[styles.cancelBtnText, { color: activeThemeObj.colors.textMain }]}>Cancelar</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={() => {
+                    handleToggleAbsence(studentToConfirmAbsence.id);
+                    setStudentToConfirmAbsence(null);
+                  }}
+                  style={[
+                    styles.actionBtn,
+                    { backgroundColor: studentToConfirmAbsence.attendance === 'absent' ? activeThemeObj.colors.ok : activeThemeObj.colors.danger }
+                  ]}
+                >
+                  <Text style={styles.actionBtnText}>
+                    {studentToConfirmAbsence.attendance === 'absent' ? 'Marcar Presente' : 'Marcar Falta'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
+  );
+
+  if (isLargeScreen) {
+    return (
+      <View style={styles.desktopFrameBackground}>
+        <View style={styles.phoneFrame}>
+          <View style={styles.notch} />
+          {mainContent}
+        </View>
+      </View>
+    );
+  }
+
+  return mainContent;
+}
+
+const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#0f172a',
+    fontWeight: '600',
+  },
+  toastContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 16,
+    zIndex: 9999,
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  toastText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  mobileArea: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  screenWrapper: {
+    flex: 1,
+  },
+  adminArea: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+    padding: 20,
+  },
+  bottomNav: {
+    height: 56,
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+  },
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 0,
+  },
+  navText: {
+    fontSize: 9.5,
+    letterSpacing: -0.2,
+    color: '#64748b',
+    marginTop: 2,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  navTextActive: {
+    color: '#2563eb',
+    fontWeight: '700',
+  },
+  desktopFrameBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 20,
+  },
+  phoneFrame: {
+    width: 410,
+    height: 840,
+    borderRadius: 40,
+    borderWidth: 8,
+    borderColor: '#1e293b',
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    elevation: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+  },
+  notch: {
+    width: 120,
+    height: 20,
+    backgroundColor: '#1e293b',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    alignSelf: 'center',
+    zIndex: 100,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  confirmBox: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 10,
+  },
+  confirmIconBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  confirmTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 6,
+  },
+  confirmMessage: {
+    fontSize: 13,
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  confirmButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  actionBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  actionBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+});
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
+

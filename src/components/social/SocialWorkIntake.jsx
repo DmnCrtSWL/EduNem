@@ -1,97 +1,207 @@
 import React, { useState } from 'react';
-import Button from '../ui/Button';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import Badge from '../ui/Badge';
+import Icon from '../ui/Icon';
+import { theme } from '../../theme/tokens';
 
 export default function SocialWorkIntake({ student, onSaveNote }) {
   const [note, setNote] = useState(student ? student.socialNote : '');
-  const [hasInternet, setHasInternet] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   if (!student) return null;
 
-  const handleSave = (e) => {
-    e.preventDefault();
+  const handleSave = () => {
     onSaveNote(student.id, note);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '900px', margin: '0 auto' }}>
-      <div className="glass-panel" style={{
-        padding: '1.5rem',
-        marginBottom: '1.5rem',
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(19, 27, 46, 0.9) 100%)',
-        border: '1px solid rgba(59, 130, 246, 0.4)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>🤝</span>
-          <div>
-            <h2 style={{ fontSize: '1.4rem', margin: 0, color: '#ffffff' }}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.headerBanner}>
+        <View style={styles.headerRow}>
+          <Text style={{ fontSize: 32 }}>🤝</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>
               Trabajo Social: Expediente 360° Socio-Familiar
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
-              Captura el contexto económico, familiar y de salud del alumno <strong>{student.name}</strong>. Esta información ayuda a la IA a sugerir planeaciones con empatía y sin pedir internet o materiales costosos.
-            </p>
-          </div>
-        </div>
-      </div>
+            </Text>
+            <Text style={styles.headerDesc}>
+              Captura el contexto económico, familiar y de salud del alumno <Text style={{ fontWeight: '800', color: '#ffffff' }}>{student.name}</Text>. Esta información ayuda a la IA a sugerir planeaciones con empatía y sin pedir internet o materiales costosos.
+            </Text>
+          </View>
+        </View>
+      </View>
 
-      <form onSubmit={handleSave} className="glass-panel" style={{ padding: '2rem', background: 'var(--bg-card)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem' }}>
-          <span style={{ fontSize: '2.5rem' }}>{student.avatar}</span>
-          <div>
-            <h3 style={{ fontSize: '1.25rem', color: '#ffffff', margin: 0 }}>{student.name}</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
+      <View style={styles.formCard}>
+        <View style={styles.studentInfoRow}>
+          <Text style={{ fontSize: 36 }}>{student.avatar}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.studentName}>{student.name}</Text>
+            <Text style={styles.studentSub}>
               Lista #{student.listNumber} • Promedio SEP: {student.historicalAverages.grade}
-            </p>
-          </div>
-          <Badge type="info" style={{ marginLeft: 'auto' }}>Entrevista en Curso</Badge>
-        </div>
+            </Text>
+          </View>
+          <Badge type="info">Entrevista en Curso</Badge>
+        </View>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', color: '#f0f4ff', fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>
             📝 Nota Confidencial para Docentes (Contexto en Aula):
-          </label>
-          <textarea
-            rows={4}
+          </Text>
+          <TextInput
+            multiline
+            numberOfLines={4}
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChangeText={setNote}
             placeholder="Ej: Sin internet en casa, cuidado por abuelos, alergia severa al polvo..."
-            style={{
-              width: '100%',
-              background: 'rgba(0, 0, 0, 0.3)',
-              border: '1px solid var(--bg-glass-border)',
-              borderRadius: '12px',
-              padding: '1rem',
-              color: '#ffffff',
-              fontSize: '0.95rem',
-              fontFamily: 'var(--font-body)',
-              outline: 'none',
-              resize: 'vertical'
-            }}
+            placeholderTextColor={theme.colors.textMuted}
+            style={styles.textArea}
           />
-        </div>
+        </View>
 
-        <div className="grid-cols-2" style={{ marginBottom: '1.75rem' }}>
-          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ color: '#94a3b8', fontSize: '0.8rem', display: 'block', marginBottom: '0.3rem' }}>🌐 Conectividad en Hogar:</span>
-            <span style={{ color: '#ffffff', fontWeight: '600' }}>Sin internet fijo (Solo datos prepago limitados)</span>
-          </div>
+        <View style={styles.gridRow}>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoBoxLabel}>🌐 Conectividad en Hogar:</Text>
+            <Text style={styles.infoBoxVal}>Sin internet fijo (Solo datos prepago limitados)</Text>
+          </View>
 
-          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ color: '#94a3b8', fontSize: '0.8rem', display: 'block', marginBottom: '0.3rem' }}>🏥 Alergias / Salud:</span>
-            <span style={{ color: '#ffffff', fontWeight: '600' }}>Reporte médico al día en enfermería</span>
-          </div>
-        </div>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoBoxLabel}>🏥 Alergias / Salud:</Text>
+            <Text style={styles.infoBoxVal}>Reporte médico al día en enfermería</Text>
+          </View>
+        </View>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+        <View style={styles.actionRow}>
           {isSaved && <Badge type="success" icon="✓">¡Expediente Actualizado!</Badge>}
-          <Button type="submit" variant="primary" size="md" icon="💾">
-            Guardar Expediente 360°
-          </Button>
-        </div>
-      </form>
-    </div>
+          <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
+            <Icon name="save" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+            <Text style={styles.saveBtnText}>Guardar Expediente 360°</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.bgMobile,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  headerBanner: {
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    borderColor: 'rgba(59, 130, 246, 0.4)',
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  headerDesc: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    lineHeight: 16,
+  },
+  formCard: {
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+  },
+  studentInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+    paddingBottom: 12,
+    marginBottom: 16,
+  },
+  studentName: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  studentSub: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#f0f4ff',
+    marginBottom: 8,
+  },
+  textArea: {
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    borderRadius: 12,
+    padding: 12,
+    color: '#ffffff',
+    fontSize: 13,
+    minHeight: 90,
+    textAlignVertical: 'top',
+  },
+  gridRow: {
+    gap: 10,
+    marginBottom: 20,
+  },
+  infoBox: {
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  infoBoxLabel: {
+    color: '#94a3b8',
+    fontSize: 11,
+    marginBottom: 4,
+  },
+  infoBoxVal: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 12,
+  },
+  saveBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+});
+

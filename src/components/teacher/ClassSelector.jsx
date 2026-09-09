@@ -1,17 +1,54 @@
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import Icon from '../ui/Icon';
+import { theme } from '../../theme/tokens';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function ClassSelector({ groups, selectedGroupId }) {
+  const { theme } = useTheme();
   const currentGroup = groups.find(g => g.id === selectedGroupId) || groups[0];
 
   return (
-    <div className="animate-fade-in" style={{ padding: '0.85rem 1rem', background: 'var(--bg-row)', borderBottom: '1px solid var(--border-light)' }}>
-      <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', margin: 0, letterSpacing: '-0.02em' }}>
+    <View style={[styles.container, { backgroundColor: theme.colors.bgMobile }]}>
+      <Text style={[styles.title, { color: theme.colors.textMain }]}>
         {currentGroup.grade}{currentGroup.group} — {currentGroup.subject}
-      </h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', fontWeight: '800', color: 'var(--color-primary)', background: 'var(--bg-primary)', padding: '0.2rem 0.6rem', borderRadius: '8px' }}>
-        <Icon name="clock" size={12} /> {currentGroup.schedule}
-      </div>
-    </div>
+      </Text>
+      <View style={[styles.scheduleBadge, { backgroundColor: theme.colors.bgPrimary }]}>
+        <Icon name="clock" size={13} color={theme.colors.primary} />
+        <Text style={[styles.scheduleText, { color: theme.colors.primary }]}>{currentGroup.schedule}</Text>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'flex-start',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: -0.4,
+    marginBottom: 8,
+  },
+  scheduleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  scheduleText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2563eb',
+  },
+});
+

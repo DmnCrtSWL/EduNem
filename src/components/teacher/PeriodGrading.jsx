@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from '../ui/Icon';
+import { theme } from '../../theme/tokens';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function PeriodGrading({ group, onUpdateStudent, showToast }) {
+  const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Initialize editable grades state from students data
-  // Using historicalAverages.grade as base, modified by recent daily grade if present
   const [finalGrades, setFinalGrades] = useState(() => {
     const grades = {};
-    group.students.forEach(s => {
-      let calcGrade = parseFloat(s.historicalAverages.grade);
-      if (s.gradeNumber) {
-        // Average historical with recent daily grade for demonstration
-        calcGrade = (calcGrade + parseFloat(s.gradeNumber)) / 2;
-      }
-      grades[s.id] = calcGrade.toFixed(1);
-    });
+    if (group && group.students) {
+      group.students.forEach(s => {
+        let calcGrade = parseFloat(s.historicalAverages.grade);
+        if (s.gradeNumber) {
+          calcGrade = (calcGrade + parseFloat(s.gradeNumber)) / 2;
+        }
+        grades[s.id] = calcGrade.toFixed(1);
+      });
+    }
     return grades;
   });
 
@@ -35,7 +39,6 @@ export default function PeriodGrading({ group, onUpdateStudent, showToast }) {
   const handleSubmit = () => {
     setIsSubmitting(true);
     setTimeout(() => {
-      // Save grades to student data
       group.students.forEach(s => {
         onUpdateStudent(s.id, {
           finalPeriodGrade: finalGrades[s.id],
@@ -48,129 +51,352 @@ export default function PeriodGrading({ group, onUpdateStudent, showToast }) {
     }, 1500);
   };
 
-  // Group Stats
-  const avgGrade = (Object.values(finalGrades).reduce((acc, val) => acc + parseFloat(val || 0), 0) / group.students.length).toFixed(1);
-  const avgAttendance = Math.floor(group.students.reduce((acc, s) => acc + s.historicalAverages.attendance, 0) / group.students.length);
+  const avgGrade = (Object.values(finalGrades).reduce((acc, val) => acc + parseFloat(val || 0), 0) / (group.students.length || 1)).toFixed(1);
+  const avgAttendance = Math.floor(group.students.reduce((acc, s) => acc + s.historicalAverages.attendance, 0) / (group.students.length || 1));
 
   return (
-    <div className="animate-fade-in" style={{ padding: '0 1rem 6rem 1rem' }}>
-      
-      {/* Header */}
-      <div style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <h2 style={{ fontSize: '1.3rem', color: 'var(--text-main)', margin: '0 0 0.25rem 0', fontWeight: '800' }}>
-          Cierre de Periodo
-        </h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
-          Revisa y envía las calificaciones finales del {group.grade}{group.group} para consulta de tutores.
-        </p>
-      </div>
+    <View style={[styles.container, { backgroundColor: theme.colors.bgMobile }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.headerTitle, { color: theme.colors.textMain }]}>Cierre de Periodo</Text>
+          <Text style={[styles.headerSubtitle, { color: theme.colors.textMuted }]}>
+            Revisa y envía las calificaciones finales del {group.grade}{group.group} para consulta de tutores.
+          </Text>
+        </View>
 
-      {/* Group Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        <div style={{ background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Icon name="award" size={24} color="var(--color-primary)" style={{ marginBottom: '0.5rem' }} />
-          <span style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-primary)', lineHeight: 1 }}>{avgGrade}</span>
-          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '0.3rem', letterSpacing: '0.05em' }}>Promedio Final</span>
-        </div>
-        <div style={{ background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Icon name="users" size={24} color="var(--color-ok)" style={{ marginBottom: '0.5rem' }} />
-          <span style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-ok)', lineHeight: 1 }}>{avgAttendance}%</span>
-          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '0.3rem', letterSpacing: '0.05em' }}>Asistencia Global</span>
-        </div>
-      </div>
+        {/* Group Summary Cards */}
+        <View style={styles.summaryGrid}>
+          <View style={[styles.summaryCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+            <Icon name="award" size={24} color={theme.colors.primary} style={{ marginBottom: 8 }} />
+            <Text style={styles.summaryValPrimary}>{avgGrade}</Text>
+            <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>Promedio Final</Text>
+          </View>
+          <View style={[styles.summaryCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+            <Icon name="users" size={24} color={theme.colors.ok} style={{ marginBottom: 8 }} />
+            <Text style={styles.summaryValOk}>{avgAttendance}%</Text>
+            <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>Asistencia Global</Text>
+          </View>
+        </View>
 
-      {isSubmitted ? (
-        <div style={{ background: 'var(--bg-ok)', border: '1px solid var(--color-ok)', borderRadius: '16px', padding: '2rem 1.5rem', textAlign: 'center', marginTop: '2rem' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#ffffff', color: 'var(--color-ok)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)' }}>
-            <Icon name="check" size={32} />
-          </div>
-          <h3 style={{ fontSize: '1.2rem', color: 'var(--color-ok)', margin: '0 0 0.5rem 0' }}>¡Enviado Oficialmente!</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', margin: 0, opacity: 0.9 }}>
-            Las calificaciones y comentarios del periodo han sido bloqueados y publicados en el Portal de Padres.
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Student List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.5rem' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Lista de Alumnos ({group.students.length})
-              </span>
-              <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Calif. Final
-              </span>
-            </div>
+        {isSubmitted ? (
+          <View style={[styles.submittedBox, { backgroundColor: theme.colors.bgOk || 'rgba(16, 185, 129, 0.1)', borderColor: theme.colors.ok }]}>
+            <View style={[styles.submittedIconCircle, { backgroundColor: theme.colors.bgRow }]}>
+              <Icon name="check" size={32} color={theme.colors.ok} />
+            </View>
+            <Text style={styles.submittedTitle}>¡Enviado Oficialmente!</Text>
+            <Text style={[styles.submittedSub, { color: theme.colors.textMain }]}>
+              Las calificaciones y comentarios del periodo han sido bloqueados y publicados en el Portal de Padres.
+            </Text>
+          </View>
+        ) : (
+          <>
+            {/* Student List */}
+            <View style={styles.listSection}>
+              <View style={styles.listHeaderRow}>
+                <Text style={[styles.listHeaderText, { color: theme.colors.textMuted }]}>
+                  Lista de Alumnos ({group.students.length})
+                </Text>
+                <Text style={[styles.listHeaderText, { color: theme.colors.textMuted }]}>
+                  Calif. Final
+                </Text>
+              </View>
 
-            {group.students.map(student => (
-              <div key={student.id} style={{ background: 'var(--bg-row)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-mobile)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
-                      {student.avatar}
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-main)', display: 'block' }}>
-                        {student.name.split(',')[0]}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        {student.name.split(',')[1]}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)' }}>Asistencia</span>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-ok)' }}>{student.historicalAverages.attendance}%</span>
-                    </div>
-                    <input 
-                      type="number"
-                      min="0"
-                      max="10"
-                      step="0.1"
-                      value={finalGrades[student.id] || ''}
-                      onChange={(e) => handleGradeChange(student.id, e.target.value)}
-                      style={{ width: '60px', padding: '0.5rem', borderRadius: '8px', border: '2px solid var(--border-primary)', background: 'var(--bg-mobile)', fontSize: '1rem', fontWeight: '800', color: 'var(--color-primary)', textAlign: 'center', outline: 'none' }}
-                    />
-                  </div>
-                </div>
+              {group.students.map(student => (
+                <View key={student.id} style={[styles.studentCard, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
+                  <View style={styles.studentRow}>
+                    <View style={styles.studentInfoLeft}>
+                      <View style={[styles.avatarCircle, { backgroundColor: theme.colors.bgMobile }]}>
+                        <Text style={styles.avatarText}>{student.avatar}</Text>
+                      </View>
+                      <View>
+                        <Text style={[styles.studentNamePrimary, { color: theme.colors.textMain }]}>
+                          {student.name.split(',')[0]}
+                        </Text>
+                        <Text style={[styles.studentNameSecondary, { color: theme.colors.textMuted }]}>
+                          {student.name.split(',')[1]}
+                        </Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.gradeInputRight}>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={[styles.attendanceLabel, { color: theme.colors.textMuted }]}>Asistencia</Text>
+                        <Text style={styles.attendanceVal}>{student.historicalAverages.attendance}%</Text>
+                      </View>
+                      <TextInput 
+                        keyboardType="decimal-pad"
+                        value={String(finalGrades[student.id] || '')}
+                        onChangeText={(val) => handleGradeChange(student.id, val)}
+                        style={[styles.gradeInput, { backgroundColor: theme.colors.bgMobile, borderColor: theme.colors.borderPrimary, color: theme.colors.primary }]}
+                      />
+                    </View>
+                  </View>
 
-                {/* Optional Comment Input */}
-                <input 
-                  type="text"
-                  placeholder="Agregar comentario para el boletín del tutor (Opcional)..."
-                  value={comments[student.id] || ''}
-                  onChange={(e) => handleCommentChange(student.id, e.target.value)}
-                  style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'transparent', fontSize: '0.75rem', color: 'var(--text-main)', outline: 'none' }}
-                />
-              </div>
-            ))}
-          </div>
+                  {/* Optional Comment Input */}
+                  <TextInput 
+                    placeholder="Agregar comentario para el boletín del tutor (Opcional)..."
+                    placeholderTextColor={theme.colors.textMuted}
+                    value={comments[student.id] || ''}
+                    onChangeText={(val) => handleCommentChange(student.id, val)}
+                    style={[styles.commentInput, { borderColor: theme.colors.borderLight, color: theme.colors.textMain }]}
+                  />
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+      </ScrollView>
 
-          {/* Fixed Submit Button */}
-          <div style={{ position: 'fixed', bottom: '70px', left: 0, right: 0, padding: '1rem', background: 'var(--bg-mobile)', borderTop: '1px solid var(--border-light)', zIndex: 10 }}>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              style={{ width: '100%', padding: '1rem', borderRadius: '14px', border: 'none', background: 'var(--color-primary)', color: '#ffffff', fontSize: '0.9rem', fontWeight: '800', cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 6px 20px rgba(59, 130, 246, 0.3)', opacity: isSubmitting ? 0.7 : 1 }}
-            >
-              {isSubmitting ? (
-                <>
-                  <Icon name="loader" size={20} className="spin" />
-                  <span>Procesando...</span>
-                </>
-              ) : (
-                <>
-                  <Icon name="send" size={20} />
-                  <span>Aprobar y Enviar</span>
-                </>
-              )}
-            </button>
-          </div>
-        </>
+      {!isSubmitted && (
+        <View style={[styles.fixedFooter, { backgroundColor: theme.colors.bgMobile, borderTopColor: theme.colors.borderLight }]}>
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+            activeOpacity={0.8}
+            style={[styles.submitButton, isSubmitting && { opacity: 0.7 }]}
+          >
+            {isSubmitting ? (
+              <>
+                <ActivityIndicator color="#ffffff" size="small" style={{ marginRight: 8 }} />
+                <Text style={styles.submitBtnText}>Procesando...</Text>
+              </>
+            ) : (
+              <>
+                <Icon name="send" size={20} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.submitBtnText}>Aprobar y Enviar</Text>
+              </>
+            ) }
+          </TouchableOpacity>
+        </View>
       )}
-    </div>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.bgMobile,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 110,
+  },
+  header: {
+    marginBottom: 20,
+    marginTop: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: theme.colors.textMain,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: theme.colors.textMuted,
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 16,
+    alignItems: 'center',
+  },
+  summaryValPrimary: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: theme.colors.primary,
+    lineHeight: 30,
+  },
+  summaryValOk: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: theme.colors.ok,
+    lineHeight: 30,
+  },
+  summaryLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    marginTop: 4,
+    letterSpacing: 0.5,
+  },
+  submittedBox: {
+    backgroundColor: theme.colors.bgOk,
+    borderColor: theme.colors.ok,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  submittedIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    shadowColor: theme.colors.ok,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  submittedTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: theme.colors.ok,
+    marginBottom: 8,
+  },
+  submittedSub: {
+    fontSize: 13.5,
+    color: theme.colors.textMain,
+    textAlign: 'center',
+    opacity: 0.9,
+    lineHeight: 18,
+  },
+  listSection: {
+    marginBottom: 24,
+  },
+  listHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  listHeaderText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  studentCard: {
+    backgroundColor: theme.colors.bgRow,
+    borderColor: theme.colors.borderLight,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 16,
+    gap: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 5,
+    elevation: 1,
+  },
+  studentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  studentInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  avatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.bgMobile,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 16,
+  },
+  studentNamePrimary: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: theme.colors.textMain,
+  },
+  studentNameSecondary: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+  },
+  gradeInputRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  attendanceLabel: {
+    fontSize: 10,
+    color: theme.colors.textMuted,
+  },
+  attendanceVal: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.ok,
+  },
+  gradeInput: {
+    width: 60,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: theme.colors.borderPrimary,
+    backgroundColor: theme.colors.bgMobile,
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.colors.primary,
+    textAlign: 'center',
+  },
+  commentInput: {
+    width: '100%',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    backgroundColor: 'transparent',
+    fontSize: 12,
+    color: theme.colors.textMain,
+  },
+  fixedFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: theme.colors.bgMobile,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.borderLight,
+  },
+  submitButton: {
+    width: '100%',
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  submitBtnText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+});
+

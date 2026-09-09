@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { authenticate } from '../../data/mockAuth';
 import Icon from '../ui/Icon';
+import { lightTheme } from '../../theme/tokens';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isFocusedUser, setIsFocusedUser] = useState(false);
+  const [isFocusedPass, setIsFocusedPass] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     setError('');
     
     if (!username || !password) {
@@ -19,7 +32,6 @@ export default function Login({ onLogin }) {
 
     setIsLoading(true);
 
-    // Simulate network delay
     setTimeout(() => {
       const user = authenticate(username, password);
       if (user) {
@@ -32,134 +44,222 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, var(--bg-main) 0%, var(--bg-row) 100%)',
-      padding: '1.5rem'
-    }}>
-      <div className="animate-fade-in" style={{
-        width: '100%',
-        maxWidth: '420px',
-        background: 'var(--bg-primary)',
-        borderRadius: '24px',
-        padding: '2.5rem 2rem',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1)',
-        border: '1px solid var(--border-light)',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          width: '64px',
-          height: '64px',
-          borderRadius: '20px',
-          background: 'linear-gradient(135deg, var(--color-primary) 0%, #1d4ed8 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 1.5rem auto',
-          boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)'
-        }}>
-          <Icon name="graduation-cap" size={32} color="#ffffff" />
-        </div>
-        
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 0.5rem 0' }}>
-          Plataforma Educativa
-        </h1>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0 0 2rem 0', fontWeight: '500' }}>
-          Inicia sesión para continuar
-        </p>
+    <KeyboardAvoidingView
+      style={styles.outerContainer}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.card}>
+          {/* Logo Badge */}
+          <View style={styles.logoBadge}>
+            <Icon name="graduation-cap" size={32} color="#ffffff" />
+          </View>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-              Usuario
-            </label>
-            <input
-              type="text"
+          <Text style={styles.title}>Plataforma Educativa</Text>
+          <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+
+          {/* Form Fields */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>USUARIO</Text>
+            <TextInput
+              style={[
+                styles.input,
+                isFocusedUser && styles.inputFocused
+              ]}
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChangeText={text => {
+                setUsername(text);
+                if (error) setError('');
+              }}
               placeholder="Ej. docente"
-              style={{
-                width: '100%',
-                padding: '0.85rem 1rem',
-                borderRadius: '12px',
-                border: '1.5px solid var(--border-light)',
-                background: 'var(--bg-row)',
-                color: 'var(--text-main)',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                outline: 'none',
-                transition: 'all 0.2s ease',
-                fontFamily: 'inherit'
-              }}
-              onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border-light)'}
+              placeholderTextColor={lightTheme.inputPlaceholder}
+              autoCapitalize="none"
+              autoCorrect={false}
+              onFocus={() => setIsFocusedUser(true)}
+              onBlur={() => setIsFocusedUser(false)}
             />
-          </div>
+          </View>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-              Contraseña
-            </label>
-            <input
-              type="password"
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>CONTRASEÑA</Text>
+            <TextInput
+              style={[
+                styles.input,
+                isFocusedPass && styles.inputFocused
+              ]}
               value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: '100%',
-                padding: '0.85rem 1rem',
-                borderRadius: '12px',
-                border: '1.5px solid var(--border-light)',
-                background: 'var(--bg-row)',
-                color: 'var(--text-main)',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                outline: 'none',
-                transition: 'all 0.2s ease',
-                fontFamily: 'inherit'
+              onChangeText={text => {
+                setPassword(text);
+                if (error) setError('');
               }}
-              onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border-light)'}
+              placeholder="••••••••"
+              placeholderTextColor={lightTheme.inputPlaceholder}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              onFocus={() => setIsFocusedPass(true)}
+              onBlur={() => setIsFocusedPass(false)}
             />
-          </div>
+          </View>
 
-          {error && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: 'var(--color-warn)', fontSize: '0.8rem', fontWeight: '700', textAlign: 'center', padding: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
-              <Icon name="alert-triangle" size={16} /> {error}
-            </div>
+          {Boolean(error) && (
+            <View style={styles.errorContainer}>
+              <Icon name="alert-triangle" size={16} color={lightTheme.colorDanger} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
           )}
 
-          <button
-            type="submit"
+          <TouchableOpacity
+            style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
             disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '0.9rem',
-              borderRadius: '12px',
-              border: 'none',
-              background: 'var(--color-primary)',
-              color: '#ffffff',
-              fontSize: '0.95rem',
-              fontWeight: '800',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              marginTop: '0.5rem',
-              boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
-              opacity: isLoading ? 0.8 : 1,
-              transition: 'all 0.2s ease'
-            }}
+            activeOpacity={0.8}
           >
-            {isLoading ? 'Ingresando...' : 'Entrar'}
-          </button>
-        </form>
+            {isLoading ? (
+              <ActivityIndicator color="#ffffff" size="small" />
+            ) : (
+              <Text style={styles.submitButtonText}>Entrar</Text>
+            )}
+          </TouchableOpacity>
 
-        <div style={{ marginTop: '2rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '500' }}>
-          Cuentas demo:<br/>
-          docente / 123 | director / 123
-        </div>
-      </div>
-    </div>
+          <Text style={styles.footerText}>
+            Cuentas demo:{'\n'}docente / 123 | director / 123
+          </Text>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#eff6ff',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  logoBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: '#2563eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#0f172a',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+    marginBottom: 28,
+    textAlign: 'center',
+  },
+  formGroup: {
+    width: '100%',
+    marginBottom: 18,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  input: {
+    width: '100%',
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 16,
+    color: '#0f172a',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  inputFocused: {
+    borderColor: '#2563eb',
+    backgroundColor: '#ffffff',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    padding: 10,
+    backgroundColor: '#fef2f2',
+    borderRadius: 10,
+    marginBottom: 16,
+    width: '100%',
+  },
+  errorText: {
+    color: '#dc2626',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  submitButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: '#2563eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
+  },
+  submitButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  footerText: {
+    marginTop: 28,
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+});
