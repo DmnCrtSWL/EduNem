@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Layout
 import Icon from '../ui/Icon';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
+import { build4ContextNEMPrompt, SCHOOL_CONTEXT_ROBUST, NEM_OFFICIAL_PILARS } from '../../data/schoolContext';
 
 const classFocusOptions = [
   { icon: 'message-square', text: 'Debate oral en equipos, mesas redondas y argumentación' },
@@ -16,6 +17,7 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
   const [lemaInput, setLemaInput] = useState('');
   const [objetivoInput, setObjetivoInput] = useState('');
   const [enfoqueInput, setEnfoqueInput] = useState('');
+  const [showContextCard, setShowContextCard] = useState(false);
   
   const [hasExam, setHasExam] = useState(false);
   const [evalCriteria, setEvalCriteria] = useState([
@@ -202,6 +204,8 @@ export default function AILessonPlanner({ group, monthlyPlans, onUpdateMonthlyPl
             <Text style={[styles.newPlanBtnText, { color: theme.colors.primary }]}>Nuevo Plan</Text>
           </TouchableOpacity>
         </View>
+
+
 
         {/* BUBBLE 1: AI GREETING */}
         <View style={styles.aiBubbleRow}>
