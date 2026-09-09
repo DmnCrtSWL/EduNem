@@ -77,14 +77,18 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
           onPress={() => setShowNotifyConfig(!showNotifyConfig)}
           style={[
             styles.notifyPill,
-            { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight },
-            pushEnabled && styles.notifyPillActive
+            {
+              backgroundColor: pushEnabled ? (theme.isDark ? '#064e3b' : '#ecfdf5') : theme.colors.bgRow,
+              borderColor: pushEnabled ? (theme.isDark ? '#059669' : '#a7f3d0') : theme.colors.borderLight,
+              borderWidth: 1.5,
+            }
           ]}
         >
-          <Icon name="bell" size={14} color={pushEnabled ? theme.colors.ok : theme.colors.textMuted} />
-          <Text style={[styles.notifyPillText, { color: theme.colors.textMuted }, pushEnabled && styles.notifyPillTextActive]}>
+          <Icon name="bell" size={14} color={pushEnabled ? (theme.isDark ? '#34d399' : '#059669') : theme.colors.textMuted} />
+          <Text style={[styles.notifyPillText, { color: pushEnabled ? (theme.isDark ? '#34d399' : '#059669') : theme.colors.textMuted }]}>
             {pushEnabled ? `Alerta: ${pushMinutes}m` : 'Alertas Off'}
           </Text>
+          <Icon name="settings" size={13} color={pushEnabled ? (theme.isDark ? '#34d399' : '#059669') : theme.colors.textMuted} />
         </TouchableOpacity>
       </View>
 
