@@ -1,18 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, StyleSheet, LayoutAnimation } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, StyleSheet, LayoutAnimation, Animated, Dimensions, Platform } from 'react-native';
 import Icon from '../ui/Icon';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function StudentProfileModal({ student, group, monthlyPlans, onClose, onUpdateStudent, onTriggerSOS }) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('registro'); // 'registro', 'expediente', 'evaluacion'
 
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT || 900)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(backdropAnim, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        damping: 24,
+        stiffness: 240,
+        mass: 0.8,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
+
+  const handleClose = () => {
+    Animated.parallel([
+      Animated.timing(backdropAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: SCREEN_HEIGHT || 900,
+        duration: 200,
+        useNativeDriver: true,
+      })
+    ]).start(() => onClose());
+  };
+
   const handleTabChange = (newTab) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setActiveTab(newTab);
   };
-  
+
   // Tab 1: Registro (EmojiPicker logic)
   const [note, setNote] = useState(student ? student.teacherNote || '' : '');
   const [attendance, setAttendance] = useState(student ? student.attendance || 'present' : 'present');
@@ -29,6 +66,17 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
   const wordCount = note.trim() ? note.trim().split(/\s+/).length : 0;
   const isOverLimit = wordCount > 150;
 
+  const handleConfirmSOSAction = () => {
+    if (confirmSOS) {
+      setConfirmSOS(null);
+      handleClose();
+      onUpdateStudent(student.id, {
+        sosReported: true,
+        status: 'exception'
+      });
+    }
+  };
+
   const handleSaveRegistro = () => {
     if (isOverLimit) return;
     const isException = attendance === 'absent' || mood !== 'normal' || performance !== 'normal';
@@ -39,7 +87,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
       teacherNote: note.trim(),
       status: isException ? 'exception' : 'ok'
     });
-    onClose();
+    handleClose();
   };
 
   const handleSaveEvaluacion = () => {
@@ -47,10 +95,10 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
       gradeRubric,
       gradeNumber
     });
-    onClose();
+    handleClose();
   };
 
-  const handleSelectQuickPreset = (presetMood, presetPerf) => {
+  const handleSelectQuickPreset = (presetMood, presetPerf, reactionKey) => {
     setMood(presetMood);
     setPerformance(presetPerf);
     setAttendance('present');
@@ -58,18 +106,11 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
       attendance: 'present',
       mood: presetMood,
       performance: presetPerf,
+      reaction: reactionKey,
       teacherNote: note.trim(),
       status: 'exception'
     });
-    onClose();
-  };
-
-  const handleConfirmSOSAction = () => {
-    if (confirmSOS) {
-      onTriggerSOS(student, confirmSOS);
-      setConfirmSOS(null);
-      onClose();
-    }
+    handleClose();
   };
 
   // Get active lesson plan details for grading
@@ -81,9 +122,19 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
   }
 
   return (
-    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
-      <TouchableOpacity activeOpacity={1} style={styles.overlay} onPress={onClose}>
-        <TouchableOpacity activeOpacity={1} style={[styles.bottomSheet, { backgroundColor: theme.colors.bgMobile }]} onPress={() => {}}>
+    <Modal visible transparent animationType="none" onRequestClose={handleClose}>
+      <Animated.View style={[styles.modalOverlay, { opacity: backdropAnim }]}>
+        <TouchableOpacity activeOpacity={1} style={StyleSheet.absoluteFill} onPress={handleClose} />
+
+        <Animated.View 
+          style={[
+            styles.bottomSheet, 
+            { 
+              backgroundColor: theme.colors.bgMobile,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
           {/* Drag Handle */}
           <View style={[styles.dragHandle, { backgroundColor: theme.colors.borderLight }]} />
 
@@ -93,26 +144,26 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
               <Text style={[styles.listNumText, { color: theme.colors.textMuted }]}>Alumno #{student.listNumber}</Text>
               <Text style={[styles.studentTitle, { color: theme.colors.textMain }]}>{student.name}</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
               <Icon name="x" size={20} color={theme.colors.textMuted} />
             </TouchableOpacity>
           </View>
 
           {/* Tabs Navigation */}
           <View style={styles.tabsNav}>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => handleTabChange('registro')}
               style={[styles.tabItem, activeTab === 'registro' && styles.tabItemActive]}
             >
               <Text style={[styles.tabText, activeTab === 'registro' && styles.tabTextActive]}>Registro</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => handleTabChange('expediente')}
               style={[styles.tabItem, activeTab === 'expediente' && styles.tabItemActive]}
             >
               <Text style={[styles.tabText, activeTab === 'expediente' && styles.tabTextActive]}>Expediente 360°</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => handleTabChange('evaluacion')}
               style={[styles.tabItem, activeTab === 'evaluacion' && styles.tabItemActive]}
             >
@@ -262,9 +313,9 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                 </View>
 
                 {/* Save button */}
-                <TouchableOpacity 
-                  onPress={handleSaveRegistro} 
-                  disabled={isOverLimit} 
+                <TouchableOpacity
+                  onPress={handleSaveRegistro}
+                  disabled={isOverLimit}
                   style={[styles.saveBtnPrimary, isOverLimit && { opacity: 0.5 }]}
                 >
                   <Icon name="check" size={18} color="#ffffff" style={{ marginRight: 6 }} />
@@ -388,7 +439,7 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
                     <Text style={styles.sectionLabel}>
                       Calificación Numérica (0-10):
                     </Text>
-                    <TextInput 
+                    <TextInput
                       keyboardType="decimal-pad"
                       value={String(gradeNumber)}
                       onChangeText={setGradeNumber}
@@ -414,8 +465,8 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
             )}
 
           </ScrollView>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
 
       {/* Confirmation Modal for SOS Alerts */}
       {confirmSOS && (
@@ -446,33 +497,31 @@ export default function StudentProfileModal({ student, group, monthlyPlans, onCl
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'flex-end',
-    alignItems: 'stretch',
-    width: '100%',
-    margin: 0,
-    padding: 0,
   },
   bottomSheet: {
-    backgroundColor: theme.colors.bgMobile,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     width: '100%',
-    maxHeight: '92%',
-    padding: 16,
-    paddingBottom: 24,
-    margin: 0,
-    alignSelf: 'stretch',
+    maxHeight: '90%',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 24,
   },
   dragHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: theme.colors.borderLight,
-    borderRadius: 2,
+    width: 36,
+    height: 4.5,
+    borderRadius: 2.25,
     alignSelf: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   modalHeader: {
     flexDirection: 'row',
