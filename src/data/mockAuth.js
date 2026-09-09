@@ -26,6 +26,13 @@ export const mockUsers = [
     password: '123',
     role: 'social',
     name: 'Trabajo Social CDMX'
+  },
+  {
+    id: 'usr_5',
+    username: 'FranciscoMP',
+    password: '192837465',
+    role: 'teacher',
+    name: 'Francisco MP'
   }
 ];
 
