@@ -11,9 +11,11 @@ import Icon from '../ui/Icon';
 import ClassSelector from './ClassSelector';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
+import { useOffline } from '../../context/OfflineContext';
 
 export default function StudentGrid({ groups, selectedGroupId, onSelectGroup, group, isClassInSession = true, onSimulateClassTime, onStudentClick, onToggleAbsence, onRequestToggleAbsence }) {
   const { theme } = useTheme();
+  const { isOnline, pendingCount } = useOffline();
   const [searchTerm, setSearchTerm] = useState('');
   const [showBanner, setShowBanner] = useState(true);
 
@@ -57,7 +59,12 @@ export default function StudentGrid({ groups, selectedGroupId, onSelectGroup, gr
           <Text style={[styles.summaryText, { color: theme.colors.textMuted }]}>
             Total lista: <Text style={[styles.boldText, { color: theme.colors.textMain }]}>{group.totalStudents} alumnos</Text>
           </Text>
-          <Text style={[styles.presentText, { color: theme.colors.ok }]}>✓ {presentCount} presentes</Text>
+          <View style={styles.summaryRight}>
+            <Text style={[styles.presentText, { color: theme.colors.ok }]}>✓ {presentCount} presentes</Text>
+            {!isOnline && pendingCount > 0 && (
+              <Text style={styles.offlineHint}>☁ Guardado local</Text>
+            )}
+          </View>
         </View>
 
         {/* Warning Banner When Class is Not In Session */}
@@ -252,6 +259,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#059669',
+  },
+  summaryRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  offlineHint: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#d97706',
   },
   readOnlyBanner: {
     marginHorizontal: 16,

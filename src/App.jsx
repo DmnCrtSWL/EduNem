@@ -31,6 +31,7 @@ import PeriodGrading from './components/teacher/PeriodGrading';
 import Login from './components/layout/Login';
 import { theme } from './theme/tokens';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { OfflineProvider } from './context/OfflineContext';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -702,8 +703,11 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <OfflineProvider>
+        <AppContent />
+      </OfflineProvider>
     </ThemeProvider>
   );
 }
+
 

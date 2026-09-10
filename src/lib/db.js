@@ -1,3 +1,5 @@
+import { enqueueChange, markAsSynced, markAsFailed } from './offlineStore';
+
 const GROUPS_ID = 'groups';
 const PLANS_ID = 'monthlyPlans';
 
@@ -15,7 +17,15 @@ async function fetchFromApi(id) {
   }
 }
 
+/**
+ * Guarda en la cola local primero (latencia cero) y luego intenta subir al servidor.
+ * Si falla la red, el syncEngine lo reintentará automáticamente.
+ */
 async function saveToApi(id, data) {
+  // 1. Encolar de inmediato en localStorage (offline-first)
+  const localId = enqueueChange(id, data);
+
+  // 2. Intentar enviar al servidor
   try {
     const response = await fetch(`${API_BASE_URL}/api/data/${id}`, {
       method: 'POST',
@@ -23,8 +33,11 @@ async function saveToApi(id, data) {
       body: JSON.stringify({ data })
     });
     if (!response.ok) throw new Error('Network response was not ok');
+    // 3. Éxito: marcar como SYNCED inmediatamente
+    markAsSynced([{ localId }]);
   } catch (error) {
-    console.error(`Error saving ${id}:`, error);
+    // 3. Sin red: queda PENDING — syncEngine lo reintentará
+    console.warn(`[db] Sin conexión, cambio en cola local (${id}):`, localId);
   }
 }
 
