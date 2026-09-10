@@ -11,11 +11,29 @@ import Icon from '../ui/Icon';
 import ClassSelector from './ClassSelector';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
-import { useOffline } from '../../context/OfflineContext';
+
+const STORAGE_KEY = 'edunem_offline_queue';
+function usePendingCount() {
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    function read() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const q = raw ? JSON.parse(raw) : [];
+        setCount(q.filter(i => i.syncStatus === 'PENDING').length);
+      } catch { setCount(0); }
+    }
+    read();
+    const iv = setInterval(read, 2000);
+    return () => clearInterval(iv);
+  }, []);
+  return count;
+}
 
 export default function StudentGrid({ groups, selectedGroupId, onSelectGroup, group, isClassInSession = true, onSimulateClassTime, onStudentClick, onToggleAbsence, onRequestToggleAbsence }) {
   const { theme } = useTheme();
-  const { isOnline, pendingCount } = useOffline();
+  const pendingCount = usePendingCount();
+  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const [searchTerm, setSearchTerm] = useState('');
   const [showBanner, setShowBanner] = useState(true);
 

@@ -1,12 +1,36 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from '../ui/Icon';
-import { useOffline } from '../../context/OfflineContext';
 import OfflineSyncSheet from '../ui/OfflineSyncSheet';
+
+const STORAGE_KEY = 'edunem_offline_queue';
+
+/** Lee directamente de localStorage — sin depender del contexto */
+function usePendingCount() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    function read() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const q = raw ? JSON.parse(raw) : [];
+        setCount(q.filter(i => i.syncStatus === 'PENDING').length);
+      } catch {
+        setCount(0);
+      }
+    }
+
+    read(); // lectura inmediata
+    const interval = setInterval(read, 2000); // refresca cada 2 segundos
+    return () => clearInterval(interval);
+  }, []);
+
+  return count;
+}
 
 export default function Navbar({ activeRole, onRoleChange, theme, onToggleTheme, onLogout, currentUser }) {
   const isDark = theme === 'dark';
-  const { pendingCount } = useOffline();
+  const pendingCount = usePendingCount();
   const [showSyncSheet, setShowSyncSheet] = useState(false);
 
   return (
@@ -67,7 +91,7 @@ export default function Navbar({ activeRole, onRoleChange, theme, onToggleTheme,
             </View>
           )}
 
-          {/* Micro-badge de sincronización offline — solo aparece cuando hay cambios pendientes */}
+          {/* Badge de nube — lee localStorage directo, sin contexto */}
           {pendingCount > 0 && (
             <TouchableOpacity
               onPress={() => setShowSyncSheet(true)}
@@ -148,12 +172,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#1e293b',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   userInfo: {
     flexDirection: 'row',
@@ -171,7 +193,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#f8fafc',
   },
   userRole: {
     fontSize: 10,
@@ -182,7 +203,6 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 20,
-    backgroundColor: '#334155',
   },
   logoutButton: {
     paddingVertical: 4,
@@ -214,9 +234,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#1e293b',
     borderWidth: 1,
-    borderColor: '#334155',
     alignItems: 'center',
     justifyContent: 'center',
   },
