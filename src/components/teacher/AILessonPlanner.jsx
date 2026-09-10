@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 12,
-    paddingBottom: 24,
+    paddingBottom: 110,
   },
   topHeaderCard: {
     backgroundColor: theme.colors.bgRow,

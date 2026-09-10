@@ -8,7 +8,7 @@ export default function Navbar({ activeRole, onRoleChange, theme, onToggleTheme,
     <View style={[
       styles.header,
       {
-        marginTop: 'max(env(safe-area-inset-top), 12px)',
+        marginTop: 'max(env(safe-area-inset-top), 18px)',
         backgroundColor: isDark ? '#0f172a' : '#ffffff',
         borderColor: isDark ? '#334155' : '#e2e8f0',
         borderWidth: 1,

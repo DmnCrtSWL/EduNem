@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
   listContent: {
-    paddingBottom: 24,
+    paddingBottom: 110,
   },
   rosterRow: {
     flexDirection: 'row',

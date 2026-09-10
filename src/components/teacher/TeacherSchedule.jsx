@@ -417,6 +417,7 @@ export default function TeacherSchedule({ groups, currentUser, simulatedTime, on
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    paddingBottom: 110,
   },
   topRow: {
     flexDirection: 'row',

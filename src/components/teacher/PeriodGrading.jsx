@@ -145,32 +145,33 @@ export default function PeriodGrading({ group, onUpdateStudent, showToast }) {
                 </View>
               ))}
             </View>
+
+            {/* Submit Button al final de la lista de alumnos */}
+            {!isSubmitted && (
+              <View style={styles.submitSection}>
+                <TouchableOpacity
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                  activeOpacity={0.8}
+                  style={[styles.submitButton, isSubmitting && { opacity: 0.7 }]}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <ActivityIndicator color="#ffffff" size="small" style={{ marginRight: 8 }} />
+                      <Text style={styles.submitBtnText}>Procesando...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="send" size={20} color="#ffffff" style={{ marginRight: 8 }} />
+                      <Text style={styles.submitBtnText}>Aprobar y Enviar Calificaciones</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
           </>
         )}
       </ScrollView>
-
-      {!isSubmitted && (
-        <View style={[styles.fixedFooter, { backgroundColor: theme.colors.bgMobile, borderTopColor: theme.colors.borderLight }]}>
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            activeOpacity={0.8}
-            style={[styles.submitButton, isSubmitting && { opacity: 0.7 }]}
-          >
-            {isSubmitting ? (
-              <>
-                <ActivityIndicator color="#ffffff" size="small" style={{ marginRight: 8 }} />
-                <Text style={styles.submitBtnText}>Procesando...</Text>
-              </>
-            ) : (
-              <>
-                <Icon name="send" size={20} color="#ffffff" style={{ marginRight: 8 }} />
-                <Text style={styles.submitBtnText}>Aprobar y Enviar</Text>
-              </>
-            ) }
-          </TouchableOpacity>
-        </View>
-      )}
     </View>
   );
 }
@@ -369,15 +370,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textMain,
   },
-  fixedFooter: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: theme.colors.bgMobile,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderLight,
+  submitSection: {
+    marginTop: 20,
+    marginBottom: 24,
+    width: '100%',
   },
   submitButton: {
     width: '100%',

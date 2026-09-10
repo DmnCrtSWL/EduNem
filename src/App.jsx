@@ -252,7 +252,7 @@ function AppContent() {
   }
 
   const mainContent = (
-    <View style={[styles.appContainer, { backgroundColor: activeThemeObj.colors.bgApp }]}>
+    <View style={[styles.appContainer, { backgroundColor: isLargeScreen ? activeThemeObj.colors.bgApp : activeThemeObj.colors.bgMobile }]}>
       {/* Toast Notification */}
       {toast && (
         <View style={styles.toastContainer}>
@@ -510,7 +510,9 @@ function AppContent() {
 const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
+    height: '100%',
     backgroundColor: '#f1f5f9',
+    overflow: 'hidden',
   },
   loadingContainer: {
     flex: 1,
@@ -546,10 +548,13 @@ const styles = StyleSheet.create({
   },
   mobileArea: {
     flex: 1,
-    justifyContent: 'space-between',
+    minHeight: 0,
+    position: 'relative',
+    overflow: 'hidden',
   },
   screenWrapper: {
     flex: 1,
+    minHeight: 0,
   },
   adminArea: {
     flex: 1,
@@ -557,27 +562,32 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   bottomNav: {
-    height: 60,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
     backgroundColor: '#ffffff',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    marginHorizontal: 16,
-    marginBottom: 'max(env(safe-area-inset-bottom), 16px)',
-    borderRadius: 30,
+    paddingHorizontal: 8,
+    paddingTop: 6,
+    paddingBottom: 'max(env(safe-area-inset-bottom), 14px)',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 10,
-    borderWidth: 1,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 16,
+    zIndex: 1000,
   },
   navItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
+    paddingVertical: 4,
     paddingHorizontal: 0,
   },
   navText: {
