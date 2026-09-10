@@ -23,7 +23,7 @@ async function seedViaHttp() {
 
     console.log(`✅ Base de datos sembrada con éxito vía API HTTP:`);
     console.log(`   - ${mockGroups.length} asignaturas distribuidas en 6 grupos (1°A - 3°B).`);
-    console.log(`   - 35 alumnos por salón con Ficha 360° inter-docente.`);
+    console.log(`   - 30 alumnos por salón con Ficha 360° inter-docente.`);
     console.log(`   - Planeaciones mensuales NEM iniciales.`);
     return true;
   } catch (err) {

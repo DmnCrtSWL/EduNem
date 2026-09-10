@@ -97,13 +97,13 @@ function generateStudents(count, groupId, startId = 1) {
   });
 }
 
-// Generación de alumnos compartidos por salón físico (35 por salón)
-const students1A = generateStudents(35, '1a', 101);
-const students1B = generateStudents(35, '1b', 201);
-const students2A = generateStudents(35, '2a', 301);
-const students2B = generateStudents(35, '2b', 401);
-const students3A = generateStudents(35, '3a', 501);
-const students3B = generateStudents(35, '3b', 601);
+// Generación de alumnos compartidos por salón físico (30 por salón)
+const students1A = generateStudents(30, '1a', 101);
+const students1B = generateStudents(30, '1b', 201);
+const students2A = generateStudents(30, '2a', 301);
+const students2B = generateStudents(30, '2b', 401);
+const students3A = generateStudents(30, '3a', 501);
+const students3B = generateStudents(30, '3b', 601);
 
 // Official school schedules in CDMX time (America/Mexico_City)
 export const mockGroups = [
@@ -120,7 +120,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1A
   },
   {
@@ -135,7 +135,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1B
   },
   {
@@ -150,7 +150,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '10:40 - 12:10 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2A
   },
   {
@@ -165,7 +165,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '12:10 - 13:40 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2B
   },
   {
@@ -180,7 +180,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3A
   },
   {
@@ -195,7 +195,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3B
   },
 
@@ -212,7 +212,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '07:00 - 08:40 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1A
   },
   {
@@ -227,7 +227,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '08:40 - 10:20 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1B
   },
   {
@@ -242,7 +242,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '10:40 - 12:10 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2A
   },
   {
@@ -257,7 +257,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '12:10 - 13:40 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2B
   },
   {
@@ -272,7 +272,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '07:00 - 08:40 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3A
   },
   {
@@ -287,7 +287,7 @@ export const mockGroups = [
     teacherName: 'Francisco MP',
     schedule: '08:40 - 10:20 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3B
   },
 
@@ -304,7 +304,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1A
   },
   {
@@ -319,7 +319,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1B
   },
   {
@@ -334,7 +334,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '12:10 - 13:40 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2A
   },
   {
@@ -349,7 +349,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '10:40 - 12:10 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2B
   },
   {
@@ -364,7 +364,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3A
   },
   {
@@ -379,7 +379,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
     scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3B
   },
 
@@ -396,7 +396,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '08:40 - 10:20 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1A
   },
   {
@@ -411,7 +411,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '07:00 - 08:40 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students1B
   },
   {
@@ -426,7 +426,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '12:10 - 13:40 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2A
   },
   {
@@ -441,7 +441,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '10:40 - 12:10 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students2B
   },
   {
@@ -456,7 +456,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '08:40 - 10:20 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3A
   },
   {
@@ -471,7 +471,7 @@ export const mockGroups = [
     teacherName: 'Profe Ricardo',
     schedule: '07:00 - 08:40 hrs (Mar/Jue)',
     scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
-    totalStudents: 35,
+    totalStudents: 30,
     students: students3B
   }
 ];

@@ -49,7 +49,7 @@ El archivo `docker-compose.yml` inicia 3 servicios aislados:
 - **`frontend`**: Servidor Nginx que sirve la aplicación web y redirige `/api/` al backend.
 
 ### 5. Sembrar Datos Iniciales en el VPS (6 Grupos, Materias y Alumnos)
-Para cargar los 6 grupos oficiales (1°A a 3°B), sus 4 asignaturas y los 35 alumnos por salón:
+Para cargar los 6 grupos oficiales (1°A a 3°B), sus 4 asignaturas y los 30 alumnos por salón:
 ```bash
 docker compose exec backend node -e "
   const { Pool } = require('pg');
