@@ -12,7 +12,7 @@ import ClassSelector from './ClassSelector';
 import { theme } from '../../theme/tokens';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function StudentGrid({ groups, selectedGroupId, group, isClassInSession = true, onSimulateClassTime, onStudentClick, onToggleAbsence, onRequestToggleAbsence }) {
+export default function StudentGrid({ groups, selectedGroupId, onSelectGroup, group, isClassInSession = true, onSimulateClassTime, onStudentClick, onToggleAbsence, onRequestToggleAbsence }) {
   const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [showBanner, setShowBanner] = useState(true);
@@ -49,7 +49,7 @@ export default function StudentGrid({ groups, selectedGroupId, group, isClassInS
       <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={true}>
         {/* Class Header Title & Schedule */}
         {groups && selectedGroupId && (
-          <ClassSelector groups={groups} selectedGroupId={selectedGroupId} />
+          <ClassSelector groups={groups} selectedGroupId={selectedGroupId} onSelectGroup={onSelectGroup} />
         )}
 
         {/* Attendance Summary Bar */}

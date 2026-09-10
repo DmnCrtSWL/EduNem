@@ -34,19 +34,29 @@ nano .env
 ```
 Asegúrate de definir:
 ```env
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu_clave_anonima_supabase
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=tu_password_seguro
-POSTGRES_DB=edunam_db
-PORT=3000
+DB_PASSWORD=tu_password_seguro_postgres
+VITE_API_URL=
 ```
 
-### 4. Ejecutar el Script de Despliegue Automatizado
-Da permisos y ejecuta el script:
+### 4. Ejecutar el Despliegue Automatizado
+Levanta los contenedores en segundo plano:
 ```bash
-chmod +x scripts/deploy-vps.sh
-./scripts/deploy-vps.sh
+docker compose up --build -d
+```
+El archivo `docker-compose.yml` inicia 3 servicios aislados:
+- **`db`**: PostgreSQL 15 con volumen persistente `pgdata`.
+- **`backend`**: Servidor Node.js Express con inicialización automática de la tabla `app_data`.
+- **`frontend`**: Servidor Nginx que sirve la aplicación web y redirige `/api/` al backend.
+
+### 5. Sembrar Datos Iniciales en el VPS (6 Grupos, Materias y Alumnos)
+Para cargar los 6 grupos oficiales (1°A a 3°B), sus 4 asignaturas y los 30 alumnos por salón:
+```bash
+docker compose exec backend node -e "
+  const { Pool } = require('pg');
+  // Script de inicialización de datos
+"
+# O ejecutando el script provisto:
+node scripts/seed-vps.js
 ```
 
 ---

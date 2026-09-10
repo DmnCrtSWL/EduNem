@@ -97,64 +97,382 @@ function generateStudents(count, groupId, startId = 1) {
   });
 }
 
+// Generación de alumnos compartidos por salón físico (30 por salón)
+const students1A = generateStudents(30, '1a', 101);
+const students1B = generateStudents(30, '1b', 201);
+const students2A = generateStudents(30, '2a', 301);
+const students2B = generateStudents(30, '2b', 401);
+const students3A = generateStudents(30, '3a', 501);
+const students3B = generateStudents(30, '3b', 601);
+
 // Official school schedules in CDMX time (America/Mexico_City)
 export const mockGroups = [
+  // --- FRANCISCO MP: LENGUAJES (ESPAÑOL) ---
   {
-    id: '3a',
+    id: '1a-esp',
+    grade: '1°',
+    group: 'A',
+    name: '1°A - Español I',
+    subject: 'Español I',
+    campoFormativo: 'Lenguajes',
+    classroom: 'Aula 01 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students1A
+  },
+  {
+    id: '1b-esp',
+    grade: '1°',
+    group: 'B',
+    name: '1°B - Español I',
+    subject: 'Español I',
+    campoFormativo: 'Lenguajes',
+    classroom: 'Aula 02 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students1B
+  },
+  {
+    id: '2a-esp',
+    grade: '2°',
+    group: 'A',
+    name: '2°A - Español II',
+    subject: 'Español II',
+    campoFormativo: 'Lenguajes',
+    classroom: 'Aula 03 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '10:40 - 12:10 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    totalStudents: 30,
+    students: students2A
+  },
+  {
+    id: '2b-esp',
+    grade: '2°',
+    group: 'B',
+    name: '2°B - Español II',
+    subject: 'Español II',
+    campoFormativo: 'Lenguajes',
+    classroom: 'Aula 04 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '12:10 - 13:40 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    totalStudents: 30,
+    students: students2B
+  },
+  {
+    id: '3a-esp',
     grade: '3°',
     group: 'A',
     name: '3°A - Español III',
     subject: 'Español III',
     campoFormativo: 'Lenguajes',
-    classroom: 'Aula 05 - Edificio A',
+    classroom: 'Aula 05 - Edificio B',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
     schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: {
-      days: [1, 3, 5], // Mon, Wed, Fri
-      startHour: 7,
-      startMin: 0,
-      endHour: 8,
-      endMin: 40
-    },
-    totalStudents: 45,
-    students: generateStudents(45, '3a', 201)
+    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students3A
   },
   {
-    id: '2b',
+    id: '3b-esp',
+    grade: '3°',
+    group: 'B',
+    name: '3°B - Español III',
+    subject: 'Español III',
+    campoFormativo: 'Lenguajes',
+    classroom: 'Aula 06 - Edificio B',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students3B
+  },
+
+  // --- FRANCISCO MP: ÉTICA, NATURALEZA Y SOCIEDADES (HISTORIA) ---
+  {
+    id: '1a-his',
+    grade: '1°',
+    group: 'A',
+    name: '1°A - Historia I',
+    subject: 'Historia I',
+    campoFormativo: 'Ética, Naturaleza y Sociedades',
+    classroom: 'Aula 01 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students1A
+  },
+  {
+    id: '1b-his',
+    grade: '1°',
+    group: 'B',
+    name: '1°B - Historia I',
+    subject: 'Historia I',
+    campoFormativo: 'Ética, Naturaleza y Sociedades',
+    classroom: 'Aula 02 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students1B
+  },
+  {
+    id: '2a-his',
+    grade: '2°',
+    group: 'A',
+    name: '2°A - Historia II',
+    subject: 'Historia II',
+    campoFormativo: 'Ética, Naturaleza y Sociedades',
+    classroom: 'Aula 03 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '10:40 - 12:10 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    totalStudents: 30,
+    students: students2A
+  },
+  {
+    id: '2b-his',
+    grade: '2°',
+    group: 'B',
+    name: '2°B - Historia II',
+    subject: 'Historia II',
+    campoFormativo: 'Ética, Naturaleza y Sociedades',
+    classroom: 'Aula 04 - Edificio A',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '12:10 - 13:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    totalStudents: 30,
+    students: students2B
+  },
+  {
+    id: '3a-his',
+    grade: '3°',
+    group: 'A',
+    name: '3°A - Historia III',
+    subject: 'Historia III',
+    campoFormativo: 'Ética, Naturaleza y Sociedades',
+    classroom: 'Aula 05 - Edificio B',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students3A
+  },
+  {
+    id: '3b-his',
+    grade: '3°',
+    group: 'B',
+    name: '3°B - Historia III',
+    subject: 'Historia III',
+    campoFormativo: 'Ética, Naturaleza y Sociedades',
+    classroom: 'Aula 06 - Edificio B',
+    teacherId: 'usr_5',
+    teacherName: 'Francisco MP',
+    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students3B
+  },
+
+  // --- PROFE RICARDO: SABERES Y PENSAMIENTO CIENTÍFICO (MATEMÁTICAS) ---
+  {
+    id: '1a-mat',
+    grade: '1°',
+    group: 'A',
+    name: '1°A - Matemáticas I',
+    subject: 'Matemáticas I',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 01 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students1A
+  },
+  {
+    id: '1b-mat',
+    grade: '1°',
+    group: 'B',
+    name: '1°B - Matemáticas I',
+    subject: 'Matemáticas I',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 02 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students1B
+  },
+  {
+    id: '2a-mat',
+    grade: '2°',
+    group: 'A',
+    name: '2°A - Matemáticas II',
+    subject: 'Matemáticas II',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 03 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '12:10 - 13:40 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    totalStudents: 30,
+    students: students2A
+  },
+  {
+    id: '2b-mat',
     grade: '2°',
     group: 'B',
     name: '2°B - Matemáticas II',
     subject: 'Matemáticas II',
     campoFormativo: 'Saberes y Pensamiento Científico',
-    classroom: 'Aula 12 - Edificio B',
-    schedule: '08:40 - 10:20 hrs (Lun a Vie)',
-    scheduleRule: {
-      days: [1, 2, 3, 4, 5], // Mon-Fri
-      startHour: 8,
-      startMin: 40,
-      endHour: 10,
-      endMin: 20
-    },
-    totalStudents: 42,
-    students: generateStudents(42, '2b', 101)
+    classroom: 'Aula 04 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '10:40 - 12:10 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    totalStudents: 30,
+    students: students2B
   },
   {
-    id: '1c',
+    id: '3a-mat',
+    grade: '3°',
+    group: 'A',
+    name: '3°A - Matemáticas III',
+    subject: 'Matemáticas III',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 05 - Edificio B',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students3A
+  },
+  {
+    id: '3b-mat',
+    grade: '3°',
+    group: 'B',
+    name: '3°B - Matemáticas III',
+    subject: 'Matemáticas III',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 06 - Edificio B',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
+    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students3B
+  },
+
+  // --- PROFE RICARDO: SABERES Y PENSAMIENTO CIENTÍFICO (CIENCIAS) ---
+  {
+    id: '1a-cie',
     grade: '1°',
-    group: 'C',
-    name: '1°C - Formación Cívica',
-    subject: 'Formación Cívica y Ética',
-    campoFormativo: 'Ética, Naturaleza y Sociedades',
-    classroom: 'Aula 18 - Edificio C',
-    schedule: '16:00 - 16:50 hrs (Lun a Jue)',
-    scheduleRule: {
-      days: [1, 2, 3, 4], // Mon-Thu
-      startHour: 16,
-      startMin: 0,
-      endHour: 16,
-      endMin: 50
-    },
-    totalStudents: 40,
-    students: generateStudents(40, '1c', 301)
+    group: 'A',
+    name: '1°A - Ciencias I (Biología)',
+    subject: 'Ciencias I (Biología)',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 01 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students1A
+  },
+  {
+    id: '1b-cie',
+    grade: '1°',
+    group: 'B',
+    name: '1°B - Ciencias I (Biología)',
+    subject: 'Ciencias I (Biología)',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 02 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students1B
+  },
+  {
+    id: '2a-cie',
+    grade: '2°',
+    group: 'A',
+    name: '2°A - Ciencias II (Física)',
+    subject: 'Ciencias II (Física)',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 03 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '12:10 - 13:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    totalStudents: 30,
+    students: students2A
+  },
+  {
+    id: '2b-cie',
+    grade: '2°',
+    group: 'B',
+    name: '2°B - Ciencias II (Física)',
+    subject: 'Ciencias II (Física)',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 04 - Edificio A',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '10:40 - 12:10 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    totalStudents: 30,
+    students: students2B
+  },
+  {
+    id: '3a-cie',
+    grade: '3°',
+    group: 'A',
+    name: '3°A - Ciencias III (Química)',
+    subject: 'Ciencias III (Química)',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 05 - Edificio B',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    totalStudents: 30,
+    students: students3A
+  },
+  {
+    id: '3b-cie',
+    grade: '3°',
+    group: 'B',
+    name: '3°B - Ciencias III (Química)',
+    subject: 'Ciencias III (Química)',
+    campoFormativo: 'Saberes y Pensamiento Científico',
+    classroom: 'Aula 06 - Edificio B',
+    teacherId: 'usr_1',
+    teacherName: 'Profe Ricardo',
+    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    totalStudents: 30,
+    students: students3B
   }
 ];
 
@@ -183,13 +501,6 @@ export function detectActiveGroupByTime(dateObj = new Date()) {
     }
   }
 
-  // 2. If not strictly in session (e.g. testing in evening or weekend), find upcoming or default
-  // For demo fluidity, if before 8:40 AM, default to 3°A (7:00 AM). If between 8:40 AM and 2:00 PM, default to 2°B. Otherwise 1°C.
-  if (hour < 8 || (hour === 8 && min < 40)) {
-    return { group: mockGroups[0], matchType: 'nearby', cdmxTime: cdmxDate }; // 3A Español
-  } else if (hour < 14) {
-    return { group: mockGroups[1], matchType: 'nearby', cdmxTime: cdmxDate }; // 2B Matemáticas
-  } else {
-    return { group: mockGroups[2], matchType: 'nearby', cdmxTime: cdmxDate }; // 1C Formación
-  }
+  // 2. Default to first group for testing
+  return { group: mockGroups[0], matchType: 'nearby', cdmxTime: cdmxDate };
 }

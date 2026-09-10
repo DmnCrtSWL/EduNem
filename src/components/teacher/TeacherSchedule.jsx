@@ -33,13 +33,50 @@ const SCHEDULE_BLOCKS = [
   { id: '2b', day: 5, startH: 8, startM: 40, endH: 10, endM: 20, timeStr: '08:40 - 10:20', title: '2°B - Matemáticas II', room: 'Aula 12 - Edificio B', color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' }
 ];
 
-export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelectGroup, onNavigateToList }) {
+export default function TeacherSchedule({ groups, simulatedTime, onSimulateTime, onSelectGroup, onNavigateToList }) {
   const { theme } = useTheme();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [pushMinutes, setPushMinutes] = useState('5');
   const [showNotifyConfig, setShowNotifyConfig] = useState(false);
   const [calendarView, setCalendarView] = useState('today');
   const [showDemoTools, setShowDemoTools] = useState(false);
+
+  const activeBlocks = React.useMemo(() => {
+    if (!groups || groups.length === 0) return SCHEDULE_BLOCKS;
+    const blocks = [];
+    groups.forEach(g => {
+      if (!g.scheduleRule || !g.scheduleRule.days) return;
+      const isMath = g.subject.includes('Matemáticas');
+      const isCie = g.subject.includes('Ciencias');
+      const isHis = g.subject.includes('Historia');
+      const color = isMath ? '#059669' : isCie ? '#0d9488' : isHis ? '#d97706' : '#2563eb';
+      const bg = isMath ? '#ecfdf5' : isCie ? '#f0fdfa' : isHis ? '#fffbeb' : '#eff6ff';
+      const border = isMath ? '#a7f3d0' : isCie ? '#99f6e4' : isHis ? '#fde68a' : '#bfdbfe';
+
+      g.scheduleRule.days.forEach(day => {
+        const sH = String(g.scheduleRule.startHour).padStart(2, '0');
+        const sM = String(g.scheduleRule.startMin).padStart(2, '0');
+        const eH = String(g.scheduleRule.endHour).padStart(2, '0');
+        const eM = String(g.scheduleRule.endMin).padStart(2, '0');
+        blocks.push({
+          id: g.id,
+          day,
+          startH: g.scheduleRule.startHour,
+          startM: g.scheduleRule.startMin,
+          endH: g.scheduleRule.endHour,
+          endM: g.scheduleRule.endMin,
+          timeStr: `${sH}:${sM} - ${eH}:${eM}`,
+          title: g.name,
+          room: g.classroom,
+          color,
+          bg,
+          border,
+          teacherName: g.teacherName
+        });
+      });
+    });
+    return blocks.sort((a, b) => (a.startH * 60 + a.startM) - (b.startH * 60 + b.startM));
+  }, [groups]);
 
   const cdmxDate = simulatedTime || new Date();
   const currentDayNum = cdmxDate.getDay();
@@ -185,7 +222,7 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
 
           {/* Schedule Cards */}
           <View style={styles.blocksList}>
-            {SCHEDULE_BLOCKS.filter(b => b.day === todayDayId).map((block, i) => {
+            {activeBlocks.filter(b => b.day === todayDayId).map((block, i) => {
               const darkCardBg = block.id === '2b'
                 ? 'rgba(5, 150, 105, 0.16)'
                 : block.id === '3a'
@@ -261,7 +298,7 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
           <View style={styles.multiColumnContainer}>
             {[1, 2, 3].map((dayId) => (
               <View key={dayId} style={styles.dayColumn}>
-                {SCHEDULE_BLOCKS.filter(b => b.day === dayId).map((block, idx) => (
+                {activeBlocks.filter(b => b.day === dayId).map((block, idx) => (
                   <TouchableOpacity
                     key={idx}
                     style={[styles.smallCard, { borderLeftColor: block.color, backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.9)' : block.bg, borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : block.border }]}
@@ -293,7 +330,7 @@ export default function TeacherSchedule({ simulatedTime, onSimulateTime, onSelec
           <View style={styles.multiColumnContainer}>
             {WEEK_DAYS.map((d) => (
               <View key={d.id} style={styles.dayColumn}>
-                {SCHEDULE_BLOCKS.filter(b => b.day === d.id).map((block, idx) => (
+                {activeBlocks.filter(b => b.day === d.id).map((block, idx) => (
                   <TouchableOpacity
                     key={idx}
                     style={[styles.smallCard, { borderLeftColor: block.color, backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.9)' : block.bg, borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : block.border, paddingHorizontal: 3, paddingVertical: 6 }]}
