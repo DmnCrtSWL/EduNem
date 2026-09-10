@@ -33,7 +33,7 @@ const SCHEDULE_BLOCKS = [
   { id: '2b', day: 5, startH: 8, startM: 40, endH: 10, endM: 20, timeStr: '08:40 - 10:20', title: '2°B - Matemáticas II', room: 'Aula 12 - Edificio B', color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' }
 ];
 
-export default function TeacherSchedule({ groups, simulatedTime, onSimulateTime, onSelectGroup, onNavigateToList }) {
+export default function TeacherSchedule({ groups, currentUser, simulatedTime, onSimulateTime, onSelectGroup, onNavigateToList }) {
   const { theme } = useTheme();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [pushMinutes, setPushMinutes] = useState('5');
@@ -43,8 +43,13 @@ export default function TeacherSchedule({ groups, simulatedTime, onSimulateTime,
 
   const activeBlocks = React.useMemo(() => {
     if (!groups || groups.length === 0) return SCHEDULE_BLOCKS;
+    const teacherGroups = currentUser && currentUser.name
+      ? groups.filter(g => !g.teacherName || g.teacherName === currentUser.name)
+      : groups;
+    const sourceGroups = teacherGroups.length > 0 ? teacherGroups : groups;
+
     const blocks = [];
-    groups.forEach(g => {
+    sourceGroups.forEach(g => {
       if (!g.scheduleRule || !g.scheduleRule.days) return;
       const isMath = g.subject.includes('Matemáticas');
       const isCie = g.subject.includes('Ciencias');
@@ -76,12 +81,17 @@ export default function TeacherSchedule({ groups, simulatedTime, onSimulateTime,
       });
     });
     return blocks.sort((a, b) => (a.startH * 60 + a.startM) - (b.startH * 60 + b.startM));
-  }, [groups]);
+  }, [groups, currentUser]);
 
   const cdmxDate = simulatedTime || new Date();
   const currentDayNum = cdmxDate.getDay();
   const todayDayId = (currentDayNum >= 1 && currentDayNum <= 5) ? currentDayNum : 1;
   const timeString = cdmxDate.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const dayNames = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+  const monthNames = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+  const dateHeaderStr = `${dayNames[cdmxDate.getDay()]} ${cdmxDate.getDate()} DE ${monthNames[cdmxDate.getMonth()]}`;
+  const todayBlocks = activeBlocks.filter(b => b.day === todayDayId);
 
   const handleSelectBlock = (groupId) => {
     onSelectGroup(groupId);
@@ -213,16 +223,16 @@ export default function TeacherSchedule({ groups, simulatedTime, onSimulateTime,
           <View style={[styles.dateHeaderRow, { backgroundColor: theme.colors.bgRow, borderColor: theme.colors.borderLight }]}>
             <View style={styles.dateHeaderSub}>
               <Icon name="calendar" size={14} color={theme.colors.primary} />
-              <Text style={[styles.dateHeaderText, { color: theme.colors.textMain }]}>MARTES 26 DE JULIO</Text>
+              <Text style={[styles.dateHeaderText, { color: theme.colors.textMain }]}>{dateHeaderStr}</Text>
             </View>
             <View style={[styles.assignedPill, { backgroundColor: theme.colors.bgPrimary }]}>
-              <Text style={[styles.assignedPillText, { color: theme.colors.primary }]}>3 Clases Asignadas</Text>
+              <Text style={[styles.assignedPillText, { color: theme.colors.primary }]}>{todayBlocks.length} {todayBlocks.length === 1 ? 'Clase Asignada' : 'Clases Asignadas'}</Text>
             </View>
           </View>
 
           {/* Schedule Cards */}
           <View style={styles.blocksList}>
-            {activeBlocks.filter(b => b.day === todayDayId).map((block, i) => {
+            {todayBlocks.map((block, i) => {
               const darkCardBg = block.id === '2b'
                 ? 'rgba(5, 150, 105, 0.16)'
                 : block.id === '3a'

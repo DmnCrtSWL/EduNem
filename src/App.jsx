@@ -99,6 +99,15 @@ function AppContent() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const teacherGroups = (currentUser && currentUser.role === 'teacher' && currentUser.name)
+    ? groups.filter(g => !g.teacherName || g.teacherName === currentUser.name)
+    : groups;
+  const currentTeacherGroups = teacherGroups.length > 0 ? teacherGroups : groups;
+
+  const currentGroup = currentTeacherGroups.find(g => g.id === selectedGroupId) || currentTeacherGroups[0] || groups[0];
+  const activeResult = detectActiveGroupByTime(simulatedTime || new Date(), currentUser?.name, currentTeacherGroups);
+  const isClassInSession = simulatedGroupSession ? currentGroup.id === simulatedGroupSession : currentGroup.id === activeResult.group.id;
+
   const handleSimulateTime = (dateObj, forcedGroupId) => {
     setSimulatedTime(dateObj);
     if (forcedGroupId) {
@@ -107,18 +116,14 @@ function AppContent() {
       showToast(`Reloj CDMX simulado: Auto-seleccionando tu clase asignada (${forcedGroupId.toUpperCase()})`);
     } else {
       setSimulatedGroupSession(null);
-      const res = detectActiveGroupByTime(new Date());
+      const res = detectActiveGroupByTime(new Date(), currentUser?.name, currentTeacherGroups);
       setSelectedGroupId(res.group.id);
       showToast(`🟢 Volviendo a reloj oficial CDMX en tiempo real`);
     }
   };
 
-  const currentGroup = groups.find(g => g.id === selectedGroupId) || groups[0];
-  const activeResult = detectActiveGroupByTime(simulatedTime || new Date());
-  const isClassInSession = simulatedGroupSession ? currentGroup.id === simulatedGroupSession : currentGroup.id === activeResult.group.id;
-
   const handleSimulateClassClock = (groupId) => {
-    const targetGroup = groups.find(g => g.id === groupId) || groups[0];
+    const targetGroup = currentTeacherGroups.find(g => g.id === groupId) || currentTeacherGroups[0];
     const rule = targetGroup.scheduleRule;
     const now = new Date();
     const validDay = (rule.days && rule.days.length > 0) ? rule.days[0] : 1;
@@ -215,6 +220,13 @@ function AppContent() {
     setCurrentUser(user);
     setActiveRole(user.role);
     setIsAuthenticated(true);
+
+    const userTeacherGroups = (user.role === 'teacher' && user.name)
+      ? groups.filter(g => !g.teacherName || g.teacherName === user.name)
+      : groups;
+    const pool = userTeacherGroups.length > 0 ? userTeacherGroups : groups;
+    const detected = detectActiveGroupByTime(new Date(), user.name, pool);
+    setSelectedGroupId(detected.group.id);
     showToast(`¡Bienvenido, ${user.name}!`);
   };
 
@@ -222,6 +234,8 @@ function AppContent() {
     setIsAuthenticated(false);
     setCurrentUser(null);
     setActiveRole('teacher');
+    const detected = detectActiveGroupByTime(new Date(), null, groups);
+    setSelectedGroupId(detected.group.id);
   };
 
   if (!isAuthenticated) {
@@ -266,8 +280,8 @@ function AppContent() {
             <View style={styles.screenWrapper}>
               {activeTab === 'pulse' && (
                 <StudentGrid
-                  groups={groups}
-                  selectedGroupId={selectedGroupId}
+                  groups={currentTeacherGroups}
+                  selectedGroupId={currentGroup.id}
                   onSelectGroup={setSelectedGroupId}
                   group={currentGroup}
                   isClassInSession={isClassInSession}
@@ -281,6 +295,7 @@ function AppContent() {
               {activeTab === 'schedule' && (
                 <TeacherSchedule
                   groups={groups}
+                  currentUser={currentUser}
                   simulatedTime={simulatedTime}
                   onSimulateTime={handleSimulateTime}
                   onSelectGroup={(id) => {
@@ -330,7 +345,7 @@ function AppContent() {
 
           {/* Bottom Navigation Bar */}
           {activeRole === 'teacher' && (
-            <View style={[styles.bottomNav, { backgroundColor: activeThemeObj.colors.bgRow, borderTopColor: activeThemeObj.colors.borderLight }]}>
+            <View style={[styles.bottomNav, { backgroundColor: activeThemeObj.colors.bgRow, borderColor: activeThemeObj.colors.borderLight }]}>
               <TouchableOpacity
                 style={styles.navItem}
                 onPress={() => setActiveTab('pulse')}
@@ -542,14 +557,21 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   bottomNav: {
-    height: 56,
+    height: 60,
     backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginBottom: 'max(env(safe-area-inset-bottom), 16px)',
+    borderRadius: 30,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 10,
+    borderWidth: 1,
   },
   navItem: {
     flex: 1,

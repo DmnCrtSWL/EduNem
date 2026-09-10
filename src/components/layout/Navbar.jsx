@@ -8,9 +8,18 @@ export default function Navbar({ activeRole, onRoleChange, theme, onToggleTheme,
     <View style={[
       styles.header,
       {
-        paddingTop: Platform.OS === 'ios' ? 44 : 12,
+        marginTop: 'max(env(safe-area-inset-top), 12px)',
         backgroundColor: isDark ? '#0f172a' : '#ffffff',
-        borderBottomColor: isDark ? '#334155' : '#e2e8f0'
+        borderColor: isDark ? '#334155' : '#e2e8f0',
+        borderWidth: 1,
+        borderRadius: 24,
+        marginHorizontal: 12,
+        marginBottom: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0.3 : 0.08,
+        shadowRadius: 12,
+        elevation: 8,
       }
     ]}>
       <View style={styles.brandRow}>
@@ -63,8 +72,6 @@ export default function Navbar({ activeRole, onRoleChange, theme, onToggleTheme,
 const styles = StyleSheet.create({
   header: {
     backgroundColor: '#0f172a',
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
     paddingHorizontal: 20,
     paddingVertical: 12,
     flexDirection: 'row',

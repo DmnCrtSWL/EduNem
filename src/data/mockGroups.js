@@ -16,11 +16,12 @@ const socialNotes = [
 
 function generateStudents(count, groupId, startId = 1) {
   const rawStudents = [];
+  const gIdx = Math.max(0, ['1a', '1b', '2a', '2b', '3a', '3b'].indexOf(groupId));
   for (let i = 0; i < count; i++) {
     const isMale = i % 2 === 0;
-    const firstName = isMale ? firstNamesM[i % firstNamesM.length] : firstNamesF[i % firstNamesF.length];
-    const lastName1 = lastNames[(i * 3) % lastNames.length];
-    const lastName2 = lastNames[(i * 7 + 1) % lastNames.length];
+    const firstName = isMale ? firstNamesM[(i + gIdx * 5) % firstNamesM.length] : firstNamesF[(i + gIdx * 7) % firstNamesF.length];
+    const lastName1 = lastNames[(i * 3 + gIdx * 4) % lastNames.length];
+    const lastName2 = lastNames[(i * 7 + gIdx * 3 + 1) % lastNames.length];
     const fullName = `${lastName1} ${lastName2}, ${firstName}`;
     
     const hasNote = i % 3 === 0 || i === 2 || i === 7;
@@ -118,8 +119,8 @@ export const mockGroups = [
     classroom: 'Aula 01 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '08:40 - 10:20 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
     totalStudents: 30,
     students: students1A
   },
@@ -133,8 +134,8 @@ export const mockGroups = [
     classroom: 'Aula 02 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
     totalStudents: 30,
     students: students1B
   },
@@ -148,8 +149,8 @@ export const mockGroups = [
     classroom: 'Aula 03 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '10:40 - 12:10 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    schedule: '07:00 - 08:40 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
     totalStudents: 30,
     students: students2A
   },
@@ -163,8 +164,8 @@ export const mockGroups = [
     classroom: 'Aula 04 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '12:10 - 13:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    schedule: '10:40 - 12:10 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
     totalStudents: 30,
     students: students2B
   },
@@ -178,8 +179,8 @@ export const mockGroups = [
     classroom: 'Aula 05 - Edificio B',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
     totalStudents: 30,
     students: students3A
   },
@@ -193,8 +194,8 @@ export const mockGroups = [
     classroom: 'Aula 06 - Edificio B',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '12:10 - 13:40 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
     totalStudents: 30,
     students: students3B
   },
@@ -210,8 +211,8 @@ export const mockGroups = [
     classroom: 'Aula 01 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '10:40 - 12:10 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
     totalStudents: 30,
     students: students1A
   },
@@ -225,8 +226,8 @@ export const mockGroups = [
     classroom: 'Aula 02 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '12:10 - 13:40 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
     totalStudents: 30,
     students: students1B
   },
@@ -240,8 +241,8 @@ export const mockGroups = [
     classroom: 'Aula 03 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '10:40 - 12:10 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    schedule: '12:10 - 13:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
     totalStudents: 30,
     students: students2A
   },
@@ -255,8 +256,8 @@ export const mockGroups = [
     classroom: 'Aula 04 - Edificio A',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '12:10 - 13:40 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    schedule: '07:00 - 08:40 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
     totalStudents: 30,
     students: students2B
   },
@@ -270,8 +271,8 @@ export const mockGroups = [
     classroom: 'Aula 05 - Edificio B',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '08:40 - 10:20 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
     totalStudents: 30,
     students: students3A
   },
@@ -285,8 +286,8 @@ export const mockGroups = [
     classroom: 'Aula 06 - Edificio B',
     teacherId: 'usr_5',
     teacherName: 'Francisco MP',
-    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '10:40 - 12:10 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
     totalStudents: 30,
     students: students3B
   },
@@ -302,8 +303,8 @@ export const mockGroups = [
     classroom: 'Aula 01 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '07:00 - 08:40 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
     totalStudents: 30,
     students: students1A
   },
@@ -317,8 +318,8 @@ export const mockGroups = [
     classroom: 'Aula 02 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
     totalStudents: 30,
     students: students1B
   },
@@ -332,8 +333,8 @@ export const mockGroups = [
     classroom: 'Aula 03 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '12:10 - 13:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    schedule: '08:40 - 10:20 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
     totalStudents: 30,
     students: students2A
   },
@@ -347,8 +348,8 @@ export const mockGroups = [
     classroom: 'Aula 04 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '10:40 - 12:10 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
     totalStudents: 30,
     students: students2B
   },
@@ -362,8 +363,8 @@ export const mockGroups = [
     classroom: 'Aula 05 - Edificio B',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '08:40 - 10:20 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '10:40 - 12:10 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
     totalStudents: 30,
     students: students3A
   },
@@ -377,8 +378,8 @@ export const mockGroups = [
     classroom: 'Aula 06 - Edificio B',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '07:00 - 08:40 hrs (Lun/Mié/Vie)',
-    scheduleRule: { days: [1, 3, 5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '10:40 - 12:10 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
     totalStudents: 30,
     students: students3B
   },
@@ -394,8 +395,8 @@ export const mockGroups = [
     classroom: 'Aula 01 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '07:00 - 08:40 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
     totalStudents: 30,
     students: students1A
   },
@@ -409,8 +410,8 @@ export const mockGroups = [
     classroom: 'Aula 02 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '08:40 - 10:20 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
     totalStudents: 30,
     students: students1B
   },
@@ -424,8 +425,8 @@ export const mockGroups = [
     classroom: 'Aula 03 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '12:10 - 13:40 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
+    schedule: '10:40 - 12:10 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
     totalStudents: 30,
     students: students2A
   },
@@ -439,8 +440,8 @@ export const mockGroups = [
     classroom: 'Aula 04 - Edificio A',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '10:40 - 12:10 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 10, startMin: 40, endHour: 12, endMin: 10 },
+    schedule: '12:10 - 13:40 hrs (Mar/Jue)',
+    scheduleRule: { days: [2, 4], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
     totalStudents: 30,
     students: students2B
   },
@@ -454,8 +455,8 @@ export const mockGroups = [
     classroom: 'Aula 05 - Edificio B',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '08:40 - 10:20 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 8, startMin: 40, endHour: 10, endMin: 20 },
+    schedule: '12:10 - 13:40 hrs (Lun/Mié)',
+    scheduleRule: { days: [1, 3], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
     totalStudents: 30,
     students: students3A
   },
@@ -469,8 +470,8 @@ export const mockGroups = [
     classroom: 'Aula 06 - Edificio B',
     teacherId: 'usr_1',
     teacherName: 'Profe Ricardo',
-    schedule: '07:00 - 08:40 hrs (Mar/Jue)',
-    scheduleRule: { days: [2, 4], startHour: 7, startMin: 0, endHour: 8, endMin: 40 },
+    schedule: '12:10 - 13:40 hrs (Vie)',
+    scheduleRule: { days: [5], startHour: 12, startMin: 10, endHour: 13, endMin: 40 },
     totalStudents: 30,
     students: students3B
   }
@@ -480,7 +481,7 @@ export const mockGroups = [
  * Smart CDMX Time Matching Algorithm
  * Given a Date object (or simulated time), determines which group is currently in session or upcoming.
  */
-export function detectActiveGroupByTime(dateObj = new Date()) {
+export function detectActiveGroupByTime(dateObj = new Date(), teacherName = null, groupsList = mockGroups) {
   // Convert current time to Mexico City (CDMX) time components
   const cdmxString = dateObj.toLocaleString('en-US', { timeZone: 'America/Mexico_City' });
   const cdmxDate = new Date(cdmxString);
@@ -490,9 +491,15 @@ export function detectActiveGroupByTime(dateObj = new Date()) {
   const min = cdmxDate.getMinutes();
   const currentMinutes = hour * 60 + min;
 
-  // 1. Check if any group is strictly in session right now
-  for (const g of mockGroups) {
-    if (g.scheduleRule.days.includes(day)) {
+  const candidateGroups = (teacherName && groupsList)
+    ? groupsList.filter(g => !g.teacherName || g.teacherName === teacherName)
+    : (groupsList || mockGroups);
+
+  const pool = candidateGroups.length > 0 ? candidateGroups : (groupsList || mockGroups);
+
+  // 1. Check if any group is strictly in session right now for this teacher/pool
+  for (const g of pool) {
+    if (g.scheduleRule && g.scheduleRule.days && g.scheduleRule.days.includes(day)) {
       const startMin = g.scheduleRule.startHour * 60 + g.scheduleRule.startMin;
       const endMin = g.scheduleRule.endHour * 60 + g.scheduleRule.endMin;
       if (currentMinutes >= startMin && currentMinutes <= endMin) {
@@ -501,6 +508,13 @@ export function detectActiveGroupByTime(dateObj = new Date()) {
     }
   }
 
-  // 2. Default to first group for testing
-  return { group: mockGroups[0], matchType: 'nearby', cdmxTime: cdmxDate };
+  // 2. If not strictly in session, find upcoming class today or first of today for this teacher
+  const todayClasses = pool.filter(g => g.scheduleRule && g.scheduleRule.days && g.scheduleRule.days.includes(day));
+  if (todayClasses.length > 0) {
+    const upcoming = todayClasses.find(g => (g.scheduleRule.startHour * 60 + g.scheduleRule.startMin) >= currentMinutes);
+    return { group: upcoming || todayClasses[0], matchType: 'today', cdmxTime: cdmxDate };
+  }
+
+  // 3. Fallback to first group in the teacher's pool
+  return { group: pool[0] || mockGroups[0], matchType: 'nearby', cdmxTime: cdmxDate };
 }

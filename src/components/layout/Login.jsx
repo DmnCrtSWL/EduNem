@@ -21,6 +21,23 @@ export default function Login({ onLogin }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFocusedUser, setIsFocusedUser] = useState(false);
   const [isFocusedPass, setIsFocusedPass] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('edunem_saved_creds');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.username && parsed.password) {
+          setUsername(parsed.username);
+          setPassword(parsed.password);
+          setRememberMe(true);
+        }
+      }
+    } catch (e) {
+      console.log('No saved credentials');
+    }
+  }, []);
 
   const handleSubmit = () => {
     setError('');
@@ -35,6 +52,13 @@ export default function Login({ onLogin }) {
     setTimeout(() => {
       const user = authenticate(username, password);
       if (user) {
+        if (Platform.OS === 'web') {
+          if (rememberMe) {
+            localStorage.setItem('edunem_saved_creds', JSON.stringify({ username, password }));
+          } else {
+            localStorage.removeItem('edunem_saved_creds');
+          }
+        }
         onLogin(user);
       } else {
         setError('Credenciales incorrectas. Intenta de nuevo.');
@@ -55,10 +79,10 @@ export default function Login({ onLogin }) {
         <View style={styles.card}>
           {/* Logo Badge */}
           <View style={styles.logoBadge}>
-            <Icon name="graduation-cap" size={32} color="#ffffff" />
+            <Text style={{ fontSize: 50, lineHeight: 60 }}>🍎</Text>
           </View>
 
-          <Text style={styles.title}>Plataforma Educativa</Text>
+          <Text style={styles.title}>EduNEM</Text>
           <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
           {/* Form Fields */}
@@ -105,6 +129,17 @@ export default function Login({ onLogin }) {
             />
           </View>
 
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            activeOpacity={0.7}
+            onPress={() => setRememberMe(!rememberMe)}
+          >
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              {rememberMe && <Icon name="check" size={12} color="#ffffff" />}
+            </View>
+            <Text style={styles.checkboxLabel}>Recordarme</Text>
+          </TouchableOpacity>
+
           {Boolean(error) && (
             <View style={styles.errorContainer}>
               <Icon name="alert-triangle" size={16} color={lightTheme.colorDanger} />
@@ -124,10 +159,6 @@ export default function Login({ onLogin }) {
               <Text style={styles.submitButtonText}>Entrar</Text>
             )}
           </TouchableOpacity>
-
-          <Text style={styles.footerText}>
-            Cuentas demo:{'\n'}docente / 123 | director / 123
-          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -137,6 +168,7 @@ export default function Login({ onLogin }) {
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
+    minHeight: '100%',
     backgroundColor: '#eff6ff',
   },
   scrollContent: {
@@ -144,6 +176,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    paddingTop: 'max(env(safe-area-inset-top), 24px)',
+    paddingBottom: 'max(env(safe-area-inset-bottom), 24px)',
   },
   card: {
     width: '100%',
@@ -161,25 +195,17 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   logoBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: '#2563eb',
+    marginBottom: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
     color: '#0f172a',
-    marginBottom: 6,
+    marginBottom: 4,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
@@ -261,5 +287,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     fontWeight: '500',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+    marginTop: -8,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: '#475569',
+    fontWeight: '600',
   },
 });
