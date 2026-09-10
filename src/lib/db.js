@@ -1,7 +1,7 @@
 const GROUPS_ID = 'groups';
 const PLANS_ID = 'monthlyPlans';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/edunem' : 'http://localhost:3000');
 
 async function fetchFromApi(id) {
   try {
