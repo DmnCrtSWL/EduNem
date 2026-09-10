@@ -36,7 +36,20 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ]
-      }
+      },
+      workbox: {
+        // Las rutas de API NUNCA deben ser cacheadas por el SW.
+        // Sin esto el SW devuelve 200 falso en modo offline y db.js
+        // nunca detecta que no hay red -> el item queda SYNCED inmediatamente.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              url.pathname.includes('/api/') || url.pathname.endsWith('/health'),
+            handler: 'NetworkOnly',
+          },
+        ],
+        navigateFallbackDenylist: [/\/api\//],
+      },
     })
   ],
 })
