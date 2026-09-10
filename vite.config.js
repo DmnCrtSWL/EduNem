@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
+  base: process.env.VITE_BASE || '/edunem/',
   resolve: {
     alias: {
       'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'src/lib/codegenNativeComponentMock.js'),
