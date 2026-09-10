@@ -268,6 +268,7 @@ function AppContent() {
                 <StudentGrid
                   groups={groups}
                   selectedGroupId={selectedGroupId}
+                  onSelectGroup={setSelectedGroupId}
                   group={currentGroup}
                   isClassInSession={isClassInSession}
                   onSimulateClassTime={() => handleSimulateClassClock(currentGroup.id)}
