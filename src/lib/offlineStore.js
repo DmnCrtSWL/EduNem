@@ -20,6 +20,9 @@ function getQueue() {
 function setQueue(queue) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('edunem:queue_updated'));
+    }
   } catch (e) {
     console.error('[OfflineStore] Error saving queue:', e);
   }

@@ -21,8 +21,14 @@ function usePendingCount() {
     }
 
     read(); // lectura inmediata
-    const interval = setInterval(read, 2000); // refresca cada 2 segundos
-    return () => clearInterval(interval);
+    window.addEventListener('edunem:queue_updated', read);
+    window.addEventListener('storage', read);
+    const interval = setInterval(read, 2000); // refresco secundario periódico
+    return () => {
+      window.removeEventListener('edunem:queue_updated', read);
+      window.removeEventListener('storage', read);
+      clearInterval(interval);
+    };
   }, []);
 
   return count;

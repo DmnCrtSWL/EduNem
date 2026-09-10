@@ -46,7 +46,13 @@ async function saveToApi(id, data) {
   // 1. Encolar SIEMPRE en localStorage primero (offline-first, latencia cero)
   const localId = enqueueChange(id, data);
 
-  // 2. Verificar conectividad real antes de hacer fetch
+  // 2. Si el dispositivo no tiene red (ej. modo avión), salir de inmediato (0ms espera)
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    console.info(`[db] Dispositivo offline (modo avión/sin red) — cambio encolado (${id}):`, localId);
+    return;
+  }
+
+  // 3. Verificar conectividad real antes de hacer fetch
   const connected = await hasRealConnection();
   if (!connected) {
     console.info(`[db] Sin red — cambio encolado (${id}):`, localId);
